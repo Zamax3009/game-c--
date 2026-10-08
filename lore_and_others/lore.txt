@@ -1,0 +1,13 @@
+The main character traveled to 'Aria Kingdom' (Need to find a better name for it). He is in a tavern and hes talking with Gwen, owner of 'TAVERN' (keep it simple for this one).
+The actual setting: 'Aria Kingdom' has all of a sudden hoards of monsters attacking the city from time to time. you first go hunt in the forest some normal low-leveld enemies, then you defend increasingly harder hoard.
+you level up and gain money from slaying monsters (increases with monster level) and gain even more money by defending the city (you fail you must try again).
+you buy things in the 'SHOP'.
+when you aren't defending the city you need to explore the forest further and further so that you can find the origin of the hoards and put and end to it, or not and conquer the city. idc
+TAVERN: place to get info about the world you're in (you find new npcs from time to time and you can talk to them for lore), you can buy 'BEER' to restore energy and 'SALAD' for health.
+SHOP: place to buy better gear and potions and utensiles. things are locked behind level requirements. you can sell old armor for half the original prize.
+INVENTORY: you see the items you have and you can equip different armor and weapons depending on what you want to do. 
+
+I might need to use separate files to create the 'SHOP', 'TAVERN' and 'INVENTORY' just to keep everything tidy and pretty.
+I think that ill make a global struct in which there are all the stats of the player and money and inventory so that at least all the shared informations can be modified in all the different files.
+
+the main focus of the game will be social relations between characters while the main character is on a mission to make the 4 elemental realms make peace after centuries of wars and shed blood 
