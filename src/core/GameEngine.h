@@ -4,6 +4,12 @@
 #include "../entities/Player.h"
 #include "../dialogue/DialogueManager.h"
 
+enum class GameState {
+    WorldMap,
+    Dialogue,
+    Inventory
+};
+
 class GameEngine {
 public:
     GameEngine();

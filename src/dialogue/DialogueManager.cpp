@@ -1,60 +1,81 @@
 #include "DialogueManager.h"
+#include <nlohmann/json.hpp>
+#include <fstream>
+#include <iostream>
 
-DialogueManager::DialogueManager() {
-    loadSampleDialogue();
+using json = nlohmann::json;
+
+static Realm stringToRealm(const std::string& str){
+    if (str == "Aer") return Realm::Aer;
+    if (str == "Aqua") return Realm::Aqua;
+    if (str == "Terra") return Realm::Terra;
+    if (str == "Ignis") return Realm::Ignis;
+    return Realm::Aer;
 }
 
-void DialogueManager::loadSampleDialogue() {
-    // Nodo 0: Incontro con Gwen
-    DialogueNode node0;
-    node0.id = 0;
-    node0.speaker = "Gwen (Proprietaria Taverna)";
-    node0.text = "Benvenuto, viandante della Terra di Nessuno. I 4 Regni si stanno preparando alla guerra...";
-    node0.options = {
-        {"Cerco di mediare una pace tra i regni.", 1, Realm::Terra, +5},
-        {"Non mi importa della guerra, sono qui solo per gli affari.", 2, Realm::Ignis, +5}
-    };
+bool DialogueManager::loadFromFile(const std::string& FilePath){
+    std::ifstream file(FilePath);
+    if(!file.is_open()){
+        std::cerr << "Error: couldn't open the file " << FilePath << std::endl;
+        return false;
+    }
 
-    // Nodo 1: Risposta Diplomatica
-    DialogueNode node1;
-    node1.id = 1;
-    node1.speaker = "Gwen";
-    node1.text = "Una nobile intenzione. Portare un messaggio di pace nel Regno di Ignis non sara facile.";
-    node1.options = {
-        {"Accetto la sfida.", -1, Realm::Aer, 0} // -1 chiude il dialogo
-    };
+    try {
+        json j;
+        file >> j;
 
-    // Nodo 2: Risposta Mercenaria
-    DialogueNode node2;
-    node2.id = 2;
-    node2.speaker = "Gwen";
-    node2.text = "I mercenari durano poco in queste terre. Stai attento.";
-    node2.options = {
-        {"Ho capito.", -1, Realm::Aer, 0}
-    };
+        m_nodes.clear();
 
-    m_nodes.push_back(node0);
-    m_nodes.push_back(node1);
-    m_nodes.push_back(node2);
+        for (const auto& item : j) {
+            DialogueNode node;
+            node.id = item.at("id").get<int>();
+            node.speaker = item.at("speaker").get<std::string>();
+            node.text = item.at("text").get<std::string>();
+            for (const auto& opt : item.at("options")){
+                DialogueOption option;
+                option.text = opt.at("text").get<std::string>();
+                option.nextNodeId = opt.at("nextNodeId").get<int>();
+                option.affectedRealm = stringToRealm(opt.at("affectedRealm").get<std::string>());
+                option.reputationChange = opt.at("reputationChange").get<int>();
+
+                node.options.push_back(option);
+            }
+            m_nodes.push_back(node);
+        }
+        return true;
+    }
+    catch (const json::exception& e) {
+        std::cerr << "JSON parsing error:" << e.what() << std::endl;
+        return false;
+    }
+}
+
+DialogueManager::DialogueManager() {
+    loadFromFile("assets/dialogues.json");
 }
 
 const DialogueNode* DialogueManager::getCurrentNode() const {
-    if (m_currentNodeId >= 0 && m_currentNodeId < static_cast<int>(m_nodes.size())) {
-        return &m_nodes[m_currentNodeId];
+    for (const auto& node : m_nodes) {
+        if (node.id == m_currentNodeId){
+            return &node;
+        }
     }
     return nullptr;
 }
 
 void DialogueManager::selectOption(int optionIndex, Player& player) {
     const DialogueNode* current = getCurrentNode();
-    if (!current || optionIndex < 0 || optionIndex >= static_cast<int>(current->options.size())) return;
+    if (current == nullptr || optionIndex < 0 || optionIndex >= static_cast<int>(current->options.size())){
+        return;
+    };
 
-    const auto& option = current->options[optionIndex];
+    const DialogueOption& option = current -> options[optionIndex];
     player.modifyReputation(option.affectedRealm, option.reputationChange);
 
     if (option.nextNodeId == -1) {
-        m_active = false; // Fine dialogo
-    } else {
+        m_active = false;
+    }
+    else {
         m_currentNodeId = option.nextNodeId;
     }
 }

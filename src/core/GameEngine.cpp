@@ -3,13 +3,15 @@
 #include "imgui.h"
 #include "rlImGui.h"
 
-GameEngine::GameEngine() : m_player("Pellegrino") {
+GameEngine::GameEngine() : m_player("Pilgrim") {
     InitWindow(1280, 720, "Realms of Elementa - Engine");
     SetTargetFPS(60);
     rlImGuiSetup(true);
     
     // Avvia il dialogo iniziale
-    m_dialogueManager.startDialogue(0);
+    if (m_dialogueManager.loadFromFile("assets/dialogues.json")) {
+        m_dialogueManager.startDialogue(0);
+    }
 }
 
 GameEngine::~GameEngine() {

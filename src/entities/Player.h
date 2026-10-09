@@ -3,11 +3,18 @@
 
 #include <string>
 
-enum class Realm { Aer, Aqua, Terra, Ignis };
+enum class Realm { Aer, Aqua, Terra, Ignis }; // The four realms
 
 struct FactionReputation {
-    int aer = 0;   // Da -100 (Ostile) a +100 (Alleato)
-    int aqua = 0;
+    int aer   = 0;   // From -100 (Ostile) to +100 (Allay)
+    int aqua  = 0;
+    int terra = 0;
+    int ignis = 0;
+};
+
+struct ElementalMastery {
+    int aer   = 0;   // From 0 (none) to 100 (Master)
+    int aqua  = 0;
     int terra = 0;
     int ignis = 0;
 };
@@ -16,27 +23,26 @@ class Player {
 public:
     Player(const std::string& name);
 
-    // Getters
+    // GETTERS
     std::string getName() const { return m_name; }
     int getGold() const { return m_gold; }
-    
-    // Gestione Risorse
+    int getReputation(Realm realm) const;
+    int getMastery(Realm realm) const;
+
+    // SETTERS
+    // Resource management
     void addGold(int amount) { m_gold += amount; }
     bool payGold(int amount);
 
-    // Gestione Reputazione & Magia
+    // Reputation and Elemental Mastery management
     void modifyReputation(Realm realm, int amount);
-    int getReputation(Realm realm) const;
-    
-    int aerMastery = 10;
-    int aquaMastery = 10;
-    int terraMastery = 10;
-    int ignisMastery = 10;
+    void modifyMastery(Realm realm, int amount);
 
 private:
     std::string m_name;
     int m_gold = 50;
     FactionReputation m_reputation;
+    ElementalMastery m_mastery;
 };
 
 #endif

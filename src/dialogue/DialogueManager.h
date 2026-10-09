@@ -21,9 +21,8 @@ struct DialogueNode {
 class DialogueManager{
 public:
     DialogueManager();
-    void loadSampleDialogue();
-
     const DialogueNode* getCurrentNode() const;
+    bool loadFromFile(const std::string& FilePath);
     void selectOption(int optionsIndex, Player& player);
     bool isDialogueActive() const {return m_active; }
     void startDialogue(int startNodeId) { m_currentNodeId = startNodeId; m_active = true; }

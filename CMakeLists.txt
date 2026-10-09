@@ -26,6 +26,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     external/raylib/src 
     external/imgui 
     external/rlImGui
+    external/json
 )
 
 # 5. Link librerie
