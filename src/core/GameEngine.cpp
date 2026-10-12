@@ -5,9 +5,11 @@
 
 GameEngine::GameEngine() : m_player("Pilgrim") {
     InitWindow(1280, 720, "Realms of Elementa - Engine");
+    InitAudioDevice();
     SetTargetFPS(60);
     rlImGuiSetup(true);
     
+    m_ignisSound = LoadMusicStream("assets/Ignis_Main_Theme.mp3");
     m_currentState = GameState::WorldMap;
 
     m_regions = {
@@ -25,6 +27,8 @@ GameEngine::GameEngine() : m_player("Pilgrim") {
 
 GameEngine::~GameEngine() {
     rlImGuiShutdown();
+    UnloadMusicStream(m_ignisSound);
+    CloseAudioDevice();
     CloseWindow();
 }
 
@@ -36,7 +40,8 @@ void GameEngine::run() {
 }
 
 void GameEngine::update() {
-
+    if (m_selectRealm == Realm::Ignis && m_currentState == GameState::Dialogue) UpdateMusicStream(m_ignisSound);
+    
     if (m_currentState == GameState::WorldMap) {
         Vector2 mousePos = GetMousePosition();
 
@@ -55,6 +60,7 @@ void GameEngine::update() {
                         m_dialogueManager.loadFromFile("assets//TerraDialogues.json", "terra_wizard");
                     }
                     else if (m_selectRealm == Realm::Ignis){
+                        PlayMusicStream(m_ignisSound);
                         m_dialogueManager.loadFromFile("assets//IgnisDialogues.json", "ignis_wizard");
                     }
 

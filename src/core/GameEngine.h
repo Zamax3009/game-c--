@@ -39,6 +39,7 @@ private:
     std::vector<Region> m_regions;
     Realm m_selectRealm;
     Color renderColor;
+    Music m_ignisSound;
 };
 
 #endif

@@ -1,0 +1,104 @@
+{
+    "gwen" : [
+        {
+            "id" : 0,
+            "speaker" : "Gwen",
+            "text" : "Welcome to 'THE TAVERN', traveler. I'm Gwen, the owner of this place! Tell me, where are you from...",
+            "options" : [
+                {
+                    "text": "I come from No man's land, the place where the neverending war is fought.",
+                    "nextNodeId": 1,
+                    "affectedRealm": "Aqua",
+                    "reputationChange": 5,
+                    "masteryChange" : 0
+                },
+                {
+                    "text": "I come from nowhere and I'm going everywhere. I'd reather not talk to you now so stop asking questions.",
+                    "nextNodeId": 2,
+                    "affectedRealm": "Aqua",
+                    "reputationChange": -5,
+                    "masteryChange" : 0
+                }
+            ]
+        },
+        {
+            "id" : 1,
+            "speaker" : "Gwen",
+            "text" : "Oh dear, that's far away, you must be tired now! Let me get you a meal, it's on the house.",
+            "options" :[
+                {
+                    "text" : "Thank you very much! That's exacty what I need right now.",
+                    "nextNodeId" : -1,
+                    "affectedRealm" :"Aqua",
+                    "reputationChange" : 0,
+                    "masteryChange" : 0
+                }
+            ]   
+        },
+        {
+            "id" : 2,
+            "speaker" : "Gwen",
+            "text" : "How rude! You better not bring any truble, these lands are already dangerous on their own.",
+            "options" :[
+                {
+                    "text" : "No need to worry, lady. I'm just here for a meal, just give me one and no truble will be brought",
+                    "nextNodeId" : -1,
+                    "affectedRealm" : "Aqua",
+                    "reputationChange" : 0,
+                    "masteryChange" : 0
+                }
+            ]
+        }
+    ],
+    "aqua_wizard" : [
+        {
+            "id" : 0,
+            "speaker" : "Wizard of Aqua",
+            "text" : "Nice to meet you traveler! Are you interested in magic?",
+            "options" : [
+                {
+                    "text" : "Yes, that is the reason I came so teach me now you old man!",
+                    "nextNodeId" : 1,
+                    "affectedRealm" : "Aqua",
+                    "reputationChange" : -5,
+                    "masteryChange" : 2
+                },
+                {
+                    "text" : "It's nice meeting you too, sir. I am interested to magic indeed! would you be so kind to teach me something?",
+                    "nextNodeId" : 2,
+                    "affectedRealm" : "Aqua",
+                    "reputationChange" : 5,
+                    "masteryChange" : 5
+                }
+            ]
+        },
+        {
+            "id" : 1,
+            "speaker" : "Wizard of Aqua",
+            "text" : "I'll teach you but you better learn some good manners",
+            "options": [
+                {
+                    "text" : "I don't need no manners old man, I take what I need! I can be as rude as I want. Now quit the talk and start teaching me already!",
+                    "nextNodeId" : -1,
+                    "affectedRealm" : "Aqua",
+                    "reputationChange" : -5,
+                    "masteryChange" : 0
+                }
+            ]
+        },
+        {
+            "id" : 2,
+            "speaker" : "Wizard of Aqua",
+            "text" : "I sure will! Now come sit so I can start teaching",
+            "options" :[
+                {
+                    "text" : "Thank you so much sir!",
+                    "nextNodeId" : -1,
+                    "affectedRealm" : "Aqua",
+                    "reputationChange" : 5,
+                    "masteryChange" : 5
+                }
+            ]
+        }
+    ]
+}
