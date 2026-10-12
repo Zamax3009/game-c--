@@ -13,7 +13,7 @@ static Realm stringToRealm(const std::string& str){
     return Realm::Aer;
 }
 
-bool DialogueManager::loadFromFile(const std::string& FilePath){
+bool DialogueManager::loadFromFile(const std::string& FilePath, const std::string& npcKey){
     std::ifstream file(FilePath);
     if(!file.is_open()){
         std::cerr << "Error: couldn't open the file " << FilePath << std::endl;
@@ -26,7 +26,9 @@ bool DialogueManager::loadFromFile(const std::string& FilePath){
 
         m_nodes.clear();
 
-        for (const auto& item : j) {
+        const auto& npcNode = j.at(npcKey);
+
+        for (const auto& item : j.at(npcKey)) {
             DialogueNode node;
             node.id = item.at("id").get<int>();
             node.speaker = item.at("speaker").get<std::string>();
@@ -37,7 +39,7 @@ bool DialogueManager::loadFromFile(const std::string& FilePath){
                 option.nextNodeId = opt.at("nextNodeId").get<int>();
                 option.affectedRealm = stringToRealm(opt.at("affectedRealm").get<std::string>());
                 option.reputationChange = opt.at("reputationChange").get<int>();
-
+                option.masteryChange = opt.at("masteryChange").get<int>();
                 node.options.push_back(option);
             }
             m_nodes.push_back(node);
@@ -51,7 +53,7 @@ bool DialogueManager::loadFromFile(const std::string& FilePath){
 }
 
 DialogueManager::DialogueManager() {
-    loadFromFile("assets/dialogues.json");
+    loadFromFile("assets/TerraDialogues.json", "gwen");
 }
 
 const DialogueNode* DialogueManager::getCurrentNode() const {
@@ -71,6 +73,8 @@ void DialogueManager::selectOption(int optionIndex, Player& player) {
 
     const DialogueOption& option = current -> options[optionIndex];
     player.modifyReputation(option.affectedRealm, option.reputationChange);
+    player.modifyMastery(option.affectedRealm, option.masteryChange);
+
 
     if (option.nextNodeId == -1) {
         m_active = false;

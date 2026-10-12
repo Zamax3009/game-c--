@@ -8,8 +8,8 @@ GameEngine::GameEngine() : m_player("Pilgrim") {
     SetTargetFPS(60);
     rlImGuiSetup(true);
     
-    // Avvia il dialogo iniziale
-    if (m_dialogueManager.loadFromFile("assets/dialogues.json")) {
+    // Start initial dialogue
+    if (m_dialogueManager.loadFromFile("assets/TerraDialogues.json", "terra_wizard")) {
         m_dialogueManager.startDialogue(0);
     }
 }
@@ -27,7 +27,7 @@ void GameEngine::run() {
 }
 
 void GameEngine::update() {
-    // Logica aggiornamento dello stato di gioco
+    // Game update logic
 }
 
 void GameEngine::render() {
@@ -42,24 +42,29 @@ void GameEngine::render() {
 }
 
 void GameEngine::renderUI() {
-    // 1. Scheda Personaggio
-    ImGui::Begin("Statistiche Messaggero");
-    ImGui::Text("Nome: %s", m_player.getName().c_str());
-    ImGui::Text("Oro: %d", m_player.getGold());
+    ImGui::Begin("Statistics");
+    ImGui::Text("Name: %s", m_player.getName().c_str());
+    ImGui::Text("Gold: %d", m_player.getGold());
     ImGui::Separator();
-    ImGui::Text("Reputazione Fazioni:");
+    ImGui::Text("Factions Reputation:");
     ImGui::Text("Aer: %d | Aqua: %d | Terra: %d | Ignis: %d",
         m_player.getReputation(Realm::Aer),
         m_player.getReputation(Realm::Aqua),
         m_player.getReputation(Realm::Terra),
         m_player.getReputation(Realm::Ignis));
+    ImGui::Separator();
+    ImGui::Text("Elemental Mastery:");
+    ImGui::Text("Aer: %d | Aqua: %d | Terra: %d | Ignis: %d",
+        m_player.getMastery(Realm::Aer),
+        m_player.getMastery(Realm::Aqua),
+        m_player.getMastery(Realm::Terra),
+        m_player.getMastery(Realm::Ignis));
     ImGui::End();
 
-    // 2. Finestra dei Dialoghi ImGui
     if (m_dialogueManager.isDialogueActive()) {
         const DialogueNode* node = m_dialogueManager.getCurrentNode();
         if (node) {
-            ImGui::Begin("Dialogo", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+            ImGui::Begin("Dialogue", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
             ImGui::TextDisabled("[%s]", node->speaker.c_str());
             ImGui::TextWrapped("%s", node->text.c_str());
             ImGui::Separator();

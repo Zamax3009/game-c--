@@ -4,13 +4,15 @@
 #include <vector>
 #include "../entities/Player.h"
 
+//struct conteining the info of the vector in DialogueNode
 struct DialogueOption {
     std::string text;
     int nextNodeId;
     Realm affectedRealm;
     int reputationChange;
+    int masteryChange;
 };
-
+//struct managing the info of the dialogue currently being displayed defined by it's id
 struct DialogueNode {
     int id;
     std::string speaker;
@@ -22,7 +24,7 @@ class DialogueManager{
 public:
     DialogueManager();
     const DialogueNode* getCurrentNode() const;
-    bool loadFromFile(const std::string& FilePath);
+    bool loadFromFile(const std::string& FilePath, const std::string& npcKey);
     void selectOption(int optionsIndex, Player& player);
     bool isDialogueActive() const {return m_active; }
     void startDialogue(int startNodeId) { m_currentNodeId = startNodeId; m_active = true; }
