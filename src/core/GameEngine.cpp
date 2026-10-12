@@ -8,6 +8,15 @@ GameEngine::GameEngine() : m_player("Pilgrim") {
     SetTargetFPS(60);
     rlImGuiSetup(true);
     
+    m_currentState = GameState::WorldMap;
+
+    m_regions = {
+        {"Aer", Realm::Aer, { 0, 100, 640, 310 }, SKYBLUE},
+        {"Aqua", Realm::Aqua, { 640, 410, 640, 310 }, BLUE},
+        {"Terra", Realm::Terra, { 640, 100, 640, 310 }, GREEN},
+        {"Ignis", Realm::Ignis, { 0, 410, 640, 310 }, ORANGE}
+    };
+
     // Start initial dialogue
     if (m_dialogueManager.loadFromFile("assets/TerraDialogues.json", "terra_wizard")) {
         m_dialogueManager.startDialogue(0);
@@ -27,16 +36,79 @@ void GameEngine::run() {
 }
 
 void GameEngine::update() {
-    // Game update logic
+
+    if (m_currentState == GameState::WorldMap) {
+        Vector2 mousePos = GetMousePosition();
+
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+            for (const auto& region : m_regions){
+                if (CheckCollisionPointRec(mousePos, region.bounds)){
+                    m_selectRealm = region.realm;
+
+                    if (m_selectRealm == Realm::Aer){
+                        m_dialogueManager.loadFromFile("assets//AerDialogues.json", "aer_wizard");
+                    }
+                    else if (m_selectRealm == Realm::Aqua){
+                        m_dialogueManager.loadFromFile("assets//AquaDialogues.json", "aqua_wizard");
+                    }
+                    else if (m_selectRealm == Realm::Terra){
+                        m_dialogueManager.loadFromFile("assets//TerraDialogues.json", "terra_wizard");
+                    }
+                    else if (m_selectRealm == Realm::Ignis){
+                        m_dialogueManager.loadFromFile("assets//IgnisDialogues.json", "ignis_wizard");
+                    }
+
+                    m_currentState = GameState::Dialogue;
+                    break;
+                }
+            }
+        }
+    }
+    else if (m_currentState == GameState::Dialogue) {
+        if(!m_dialogueManager.isDialogueActive()){
+            m_currentState = GameState::WorldMap;
+        }
+    }
+
 }
 
 void GameEngine::render() {
     BeginDrawing();
     ClearBackground(DARKGRAY);
 
-    rlImGuiBegin();
-    renderUI();
-    rlImGuiEnd();
+    if (m_currentState == GameState::WorldMap) {
+        Vector2 mousePos = GetMousePosition();
+        DrawText("World map: choose a destination", 450, 40, 20, WHITE);
+        for (const auto& region : m_regions){
+            bool isHovered = CheckCollisionPointRec(mousePos, region.bounds);
+
+            renderColor = region.color;
+            if (isHovered){
+                renderColor = ColorAlpha(region.color, 0.6f);
+            }
+
+            DrawRectangleRec(region.bounds, renderColor);
+            
+            Color borderColor = isHovered ?  WHITE : BLACK;
+            int borderWidth = isHovered ? 3 : 1;
+            
+            DrawRectangleLinesEx(region.bounds, borderWidth, borderColor);
+
+            DrawText(region.name.c_str(), region.bounds.x + 15, region.bounds.y + 15, 14, WHITE);
+
+            if (isHovered) {
+                DrawText("Click to enter...", region.bounds.x + 20, region.bounds.y + 60, 14, LIGHTGRAY);
+            }
+
+        }
+    }
+    else if (m_currentState == GameState::Dialogue) {
+        rlImGuiBegin();
+        renderUI();
+        rlImGuiEnd();
+    }
+
+    
 
     EndDrawing();
 }
