@@ -40,6 +40,7 @@ private:
     Realm m_selectRealm;
     Color renderColor;
     Music m_ignisSound;
+    Music m_aerSound;
 };
 
 #endif

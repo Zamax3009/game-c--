@@ -9,6 +9,7 @@ GameEngine::GameEngine() : m_player("Pilgrim") {
     SetTargetFPS(60);
     rlImGuiSetup(true);
     
+    m_aerSound = LoadMusicStream("assets/Aer_Main_Theme.mp3");
     m_ignisSound = LoadMusicStream("assets/Ignis_Main_Theme.mp3");
     m_currentState = GameState::WorldMap;
 
@@ -19,14 +20,14 @@ GameEngine::GameEngine() : m_player("Pilgrim") {
         {"Ignis", Realm::Ignis, { 0, 410, 640, 310 }, ORANGE}
     };
 
-    // Start initial dialogue
-    if (m_dialogueManager.loadFromFile("assets/TerraDialogues.json", "terra_wizard")) {
-        m_dialogueManager.startDialogue(0);
-    }
+    GameEngine::update();
 }
+
+
 
 GameEngine::~GameEngine() {
     rlImGuiShutdown();
+    UnloadMusicStream(m_aerSound);
     UnloadMusicStream(m_ignisSound);
     CloseAudioDevice();
     CloseWindow();
@@ -39,9 +40,24 @@ void GameEngine::run() {
     }
 }
 
+
+DialogueManager::DialogueManager(){
+
+}
+
+
+
 void GameEngine::update() {
+    //Audio update
     if (m_selectRealm == Realm::Ignis && m_currentState == GameState::Dialogue) UpdateMusicStream(m_ignisSound);
-    
+    else if (m_selectRealm == Realm::Aer && m_currentState == GameState::Dialogue) UpdateMusicStream(m_aerSound);
+    else if (m_currentState == GameState::WorldMap){
+        if (!m_dialogueManager.isDialogueActive()){
+            StopMusicStream(m_ignisSound);
+            StopMusicStream(m_aerSound);
+        }
+    }
+    //Map selection
     if (m_currentState == GameState::WorldMap) {
         Vector2 mousePos = GetMousePosition();
 
@@ -51,20 +67,20 @@ void GameEngine::update() {
                     m_selectRealm = region.realm;
 
                     if (m_selectRealm == Realm::Aer){
-                        m_dialogueManager.loadFromFile("assets//AerDialogues.json", "aer_wizard");
+                        PlayMusicStream(m_aerSound);
+                        if (m_dialogueManager.loadFromFile("assets//AerDialogues.json", "aer_wizard")) m_dialogueManager.startDialogue(0);
                     }
                     else if (m_selectRealm == Realm::Aqua){
-                        m_dialogueManager.loadFromFile("assets//AquaDialogues.json", "aqua_wizard");
+                        if (m_dialogueManager.loadFromFile("assets//AquaDialogues.json", "aqua_wizard")) m_dialogueManager.startDialogue(0);
                     }
                     else if (m_selectRealm == Realm::Terra){
-                        m_dialogueManager.loadFromFile("assets//TerraDialogues.json", "terra_wizard");
+                        if (m_dialogueManager.loadFromFile("assets//TerraDialogues.json", "terra_wizard")) m_dialogueManager.startDialogue(0);
                     }
                     else if (m_selectRealm == Realm::Ignis){
                         PlayMusicStream(m_ignisSound);
-                        m_dialogueManager.loadFromFile("assets//IgnisDialogues.json", "ignis_wizard");
+                        if (m_dialogueManager.loadFromFile("assets//IgnisDialogues.json", "ignis_wizard")) m_dialogueManager.startDialogue(0);
                     }
-
-                    m_currentState = GameState::Dialogue;
+                    m_currentState == GameState::Dialogue;
                     break;
                 }
             }

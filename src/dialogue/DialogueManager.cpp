@@ -52,10 +52,6 @@ bool DialogueManager::loadFromFile(const std::string& FilePath, const std::strin
     }
 }
 
-DialogueManager::DialogueManager() {
-    loadFromFile("assets/TerraDialogues.json", "gwen");
-}
-
 const DialogueNode* DialogueManager::getCurrentNode() const {
     for (const auto& node : m_nodes) {
         if (node.id == m_currentNodeId){
