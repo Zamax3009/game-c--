@@ -1,6 +1,14 @@
 CMakeFiles/MyElementalRPG.dir/src/entities/Player.cpp.obj: \
  C:\Users\szamb\Documents\Andrea\game\ c++\src\entities\Player.cpp \
  C:\Users\szamb\Documents\Andrea\game\ c++\src\entities\Player.h \
+ C:/Users/szamb/DOCUME~1/Andrea/GAMEC_~1/external/raylib/src/raylib.h \
+ C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/stdarg.h \
+ C:/msys64/ucrt64/include/stdarg.h \
+ C:/msys64/ucrt64/include/_mingw_stdarg.h \
+ C:/msys64/ucrt64/include/vadefs.h C:/msys64/ucrt64/include/_mingw.h \
+ C:/msys64/ucrt64/include/_mingw_mac.h \
+ C:/msys64/ucrt64/include/_mingw_secapi.h \
+ C:/msys64/ucrt64/include/sdks/_mingw_ddk.h \
  C:/msys64/ucrt64/include/c++/15.2.0/string \
  C:/msys64/ucrt64/include/c++/15.2.0/bits/requires_hosted.h \
  C:/msys64/ucrt64/include/c++/15.2.0/x86_64-w64-mingw32/bits/c++config.h \
@@ -13,10 +21,6 @@ CMakeFiles/MyElementalRPG.dir/src/entities/Player.cpp.obj: \
  C:/msys64/ucrt64/include/c++/15.2.0/bits/postypes.h \
  C:/msys64/ucrt64/include/c++/15.2.0/cwchar \
  C:/msys64/ucrt64/include/wchar.h C:/msys64/ucrt64/include/corecrt.h \
- C:/msys64/ucrt64/include/_mingw.h C:/msys64/ucrt64/include/_mingw_mac.h \
- C:/msys64/ucrt64/include/_mingw_secapi.h \
- C:/msys64/ucrt64/include/vadefs.h \
- C:/msys64/ucrt64/include/sdks/_mingw_ddk.h \
  C:/msys64/ucrt64/include/corecrt_stdio_config.h \
  C:/msys64/ucrt64/include/corecrt_wstdlib.h \
  C:/msys64/ucrt64/include/corecrt_wctype.h \

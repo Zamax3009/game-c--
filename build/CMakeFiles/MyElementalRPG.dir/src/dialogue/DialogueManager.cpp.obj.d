@@ -104,6 +104,10 @@ CMakeFiles/MyElementalRPG.dir/src/dialogue/DialogueManager.cpp.obj: \
  C:/msys64/ucrt64/include/c++/15.2.0/bits/stl_bvector.h \
  C:/msys64/ucrt64/include/c++/15.2.0/bits/vector.tcc \
  C:/Users/szamb/Documents/Andrea/game\ c++/src/entities/Player.h \
+ C:/Users/szamb/DOCUME~1/Andrea/GAMEC_~1/external/raylib/src/raylib.h \
+ C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/stdarg.h \
+ C:/msys64/ucrt64/include/stdarg.h \
+ C:/msys64/ucrt64/include/_mingw_stdarg.h \
  C:/Users/szamb/DOCUME~1/Andrea/GAMEC_~1/external/json/nlohmann/json.hpp \
  C:/msys64/ucrt64/include/c++/15.2.0/algorithm \
  C:/msys64/ucrt64/include/c++/15.2.0/bits/stl_algo.h \
