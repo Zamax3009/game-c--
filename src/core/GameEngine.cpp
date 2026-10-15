@@ -8,10 +8,17 @@ GameEngine::GameEngine() : m_player("Pilgrim") {
     InitAudioDevice();
     SetTargetFPS(60);
     rlImGuiSetup(true);
+
+    m_player.setPosition({ 1280.0f / 2.0f, 720.0f / 2.0f});
     
     m_aquaSound = LoadMusicStream("assets/Aqua_Main_Theme.mp3");
     m_ignisSound = LoadMusicStream("assets/Ignis_Main_Theme.mp3");
     m_currentState = GameState::WorldMap;
+
+    m_camera.target = m_player.getPosition();
+    m_camera.offset = { 1280.0f / 2.0f, 720.0f / 2.0f },
+    m_camera.rotation = 0.0f;
+    m_camera.zoom = 1.5f;
 
     m_regions = {
         {"Aer", Realm::Aer, { 0, 100, 640, 310 }, SKYBLUE},
@@ -23,32 +30,51 @@ GameEngine::GameEngine() : m_player("Pilgrim") {
     m_regionHub = {
         {
             "Aer",  Realm::Aer, {
-                {"Gwen", "Tavern owner", "assets/AerDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 310.0f}, BROWN}},
-                {"Aer Wizard", "Wise old Wizard, keeper of secrets", "assets/AerDialogues.json", "aer_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 310.0f}, WHITE}}
+                {"Gwen", "Tavern owner", "assets/AerDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 350.0f}, BROWN}},
+                {"Aer Wizard", "Wise old Wizard, keeper of secrets", "assets/AerDialogues.json", "aer_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
             },
             {0, 100, 1280, 620}
         },
         {
             "Ignis",  Realm::Ignis, {
-                {"Gwen", "Tavern owner", "assets/IgnisDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 310.0f}, BROWN}},
-                {"Ignis Wizard", "Wise old Wizard, keeper of secrets", "assets/IgnisDialogues.json", "ignis_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 310.0f}, WHITE}}
+                {"Gwen", "Tavern owner", "assets/IgnisDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 350.0f}, BROWN}},
+                {"Ignis Wizard", "Wise old Wizard, keeper of secrets", "assets/IgnisDialogues.json", "ignis_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
             },
             {0, 100, 1280, 620}
         },
         {
             "Aqua",  Realm::Aqua, {
-                {"Gwen", "Tavern owner", "assets/AquaDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 310.0f}, BROWN}},
-                {"Aqua Wizard", "Wise old Wizard, keeper of secrets", "assets/AquaDialogues.json", "aqua_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 310.0f}, WHITE}}
+                {"Gwen", "Tavern owner", "assets/AquaDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 350.0f}, BROWN}},
+                {"Aqua Wizard", "Wise old Wizard, keeper of secrets", "assets/AquaDialogues.json", "aqua_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
             },
             {0, 100, 1280, 620}
         },
         {
             "Terra",  Realm::Terra, {
-                {"Gwen", "Tavern owner", "assets/TerraDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 310.0f}, BROWN}},
-                {"Terra Wizard", "Wise old Wizard, keeper of secrets", "assets/TerraDialogues.json", "terra_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 310.0f}, WHITE}}
+                {"Gwen", "Tavern owner", "assets/TerraDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 350.0f}, BROWN}},
+                {"Terra Wizard", "Wise old Wizard, keeper of secrets", "assets/TerraDialogues.json", "terra_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
             },
             {0, 100, 1280, 620}
         }
+    };
+
+    m_buildings = {
+        {Realm::Aer, {
+        {"Tavern", {50, 275, 150, 250}, DARKBROWN, BEIGE, {195, 390, 10, 30}, BROWN},
+        {"Library", {900, 275, 150, 250}, LIGHTGRAY, WHITE, {897, 390, 10, 30}, BROWN},
+        }},
+        {Realm::Aqua, {
+        {"Tavern", {50, 275, 150, 250}, DARKBROWN, BEIGE, {195, 390, 10, 30}, BROWN},
+        {"Library", {900, 275, 150, 250}, WHITE, LIGHTGRAY, {897, 390, 10, 30}, BROWN},
+        }},
+        {Realm::Terra, {
+        {"Tavern", {50, 275, 150, 250}, DARKBROWN, BEIGE, {195, 390, 10, 30}, BROWN},
+        {"Library", {900, 275, 150, 250}, WHITE, LIGHTGRAY, {897, 390, 10, 30}, BROWN},
+        }},
+        {Realm::Ignis, {
+        {"Tavern", {50, 275, 150, 250}, DARKBROWN, BEIGE, {195, 390, 10, 30}, BROWN},
+        {"Library", {900, 275, 150, 250}, WHITE, LIGHTGRAY, {897, 390, 10, 30}, BROWN},
+        }}
     };
 
     GameEngine::update();
@@ -112,6 +138,16 @@ void GameEngine::update() {
                     if (m_selectRealm == Realm::Aqua) PlayMusicStream(m_aquaSound);
                     else if (m_selectRealm == Realm::Ignis) PlayMusicStream(m_ignisSound);
 
+                    for (const auto& hub : m_regionHub) {
+                        if (hub.realm == m_selectRealm) {
+                            m_player.setPosition({
+                                hub.rectangle.x + (hub.rectangle.width / 2),
+                                hub.rectangle.y + (hub.rectangle.height /2)
+                            });
+                            break;
+                        }
+                    }
+
                     m_currentState = GameState::RegionHub;
                     break;
                 }
@@ -119,9 +155,18 @@ void GameEngine::update() {
         }
     }
     else if (m_currentState == GameState::RegionHub) {
-        if (IsKeyPressed(KEY_F)) {
-            Vector2 playerPos = m_player.getPosition();
+        Vector2 playerPos = m_player.getPosition();
 
+        for (auto& regionBldg : m_buildings) {
+                    if (regionBldg.realm == m_selectRealm) {
+                        for (auto& bldg : regionBldg.buildings) {
+                            bldg.updateStatus(playerPos);
+                        }
+                    }
+                }
+
+        if (IsKeyPressed(KEY_F)) {
+            
             RegionHubG* currentHub = nullptr;
             for (auto& hub : m_regionHub) {
                 if (hub.realm == m_selectRealm) {
@@ -158,12 +203,13 @@ void GameEngine::update() {
             m_currentState = GameState::RegionHub;
         }
     }
+    m_camera.target = m_player.getPosition();
 }
 
 void GameEngine::render() {
     BeginDrawing();
     ClearBackground(DARKGRAY);
-
+    BeginMode2D(m_camera);
     if (m_currentState == GameState::WorldMap) {
         rlImGuiBegin();
         renderMap();
@@ -175,7 +221,10 @@ void GameEngine::render() {
         renderRegion();
         rlImGuiEnd();
     }
-    else if (m_currentState == GameState::Dialogue) {
+
+    EndMode2D();
+
+    if (m_currentState == GameState::Dialogue) {
         rlImGuiBegin();
         renderUI();
         rlImGuiEnd();
@@ -232,13 +281,40 @@ void GameEngine::renderRegion() {
         }
     }
     if (!currentHub) return;
+    Color bldgColor = WHITE;
+    for (const auto& regionBldg : m_buildings){
+        if (regionBldg.realm == m_selectRealm){
+            for (auto& bldg : regionBldg.buildings){
+                if (bldg.isPlayerInside) {
+                    bldgColor = bldg.floor;
+                }
+                else {
+                    bldgColor = bldg.roof;
+                }
+                DrawRectangleRec(bldg.building, bldgColor);
+                DrawRectangleLinesEx(bldg.building, 2, BLACK);
+                DrawRectangleRec(bldg.entrance, bldg.door);
+                DrawRectangleLinesEx(bldg.entrance, 1, BLACK);
 
+                DrawText(bldg.name.c_str(), bldg.building.x + 10, bldg.building.y - 40, 14, WHITE);
+            }
+        }
+    }
+    
     DrawRectangleRec(currentHub->rectangle, ColorAlpha(currentRegionColor, 0.2f));
     DrawRectangleLinesEx(currentHub->rectangle, 2, currentRegionColor);
     DrawText(currentHub->name.c_str(), currentHub->rectangle.x + 20, currentHub->rectangle.y + 20, 20, WHITE);
     
     Vector2 playerPos = m_player.getPosition();
     
+    for (const auto& RegionBldg : m_buildings){
+        if (RegionBldg.realm == m_selectRealm){
+            for (const auto& bldg : RegionBldg.buildings){
+
+            }
+        }
+    }
+
     for (const auto& npcs : currentHub->npcs) {
         Vector2 pos = npcs.npcGraphics.npcPos;
         Vector2 size = npcs.npcGraphics.npcRec;

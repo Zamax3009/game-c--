@@ -13,6 +13,24 @@ enum class GameState {
     Inventory
 };
 
+struct Buildings {
+    std::string name;
+    Rectangle building;
+    Color roof;
+    Color floor;
+    Rectangle entrance;
+    Color door;
+    bool isPlayerInside;
+
+    void updateStatus(Vector2 playerPos) {
+        isPlayerInside = CheckCollisionPointRec(playerPos, entrance) || CheckCollisionPointRec(playerPos, building);
+    }
+};
+
+struct RegionBuildings {
+    Realm realm;
+    std::vector<Buildings> buildings;
+};
 
 struct NPCGraphics {
     Vector2 npcRec;
@@ -64,10 +82,12 @@ private:
     std::vector<NPCInfo> m_npcs;
     std::vector<RegionMap> m_regions;
     std::vector<RegionHubG> m_regionHub;
+    std::vector<RegionBuildings> m_buildings;
     Realm m_selectRealm;
     Color renderColor;
     Music m_ignisSound;
     Music m_aquaSound;
+    Camera2D m_camera;
 };
 
 #endif
