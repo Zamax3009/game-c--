@@ -60,20 +60,21 @@ GameEngine::GameEngine() : m_player("Pilgrim") {
 
     m_buildings = {
         {Realm::Aer, {
-        {"Tavern", {50, 275, 150, 250}, DARKBROWN, BEIGE, {195, 390, 10, 30}, BROWN},
-        {"Library", {900, 275, 150, 250}, LIGHTGRAY, WHITE, {897, 390, 10, 30}, BROWN},
+            // npcid, name, building, roof, interior, floor, entrance, door
+            {"gwen", "Tavern", {50, 200, 150, 250}, DARKBROWN, {60, 210, 130, 230}, BEIGE, {110, 440, 30, 20}, BROWN},
+            {"aer_wizard", "Library", {900, 200, 150, 250}, LIGHTGRAY, {910, 210, 130, 230}, WHITE, {960, 440, 30, 20}, BROWN},
         }},
         {Realm::Aqua, {
-        {"Tavern", {50, 275, 150, 250}, DARKBROWN, BEIGE, {195, 390, 10, 30}, BROWN},
-        {"Library", {900, 275, 150, 250}, WHITE, LIGHTGRAY, {897, 390, 10, 30}, BROWN},
+            {"gwen", "Tavern", {50, 200, 150, 250}, DARKBROWN, {60, 210, 130, 230}, BEIGE, {110, 440, 30, 20}, BROWN},
+            {"aqua_wizard", "Library", {900, 200, 150, 250}, WHITE, {910, 210, 130, 230}, LIGHTGRAY, {960, 440, 30, 20}, BROWN},
         }},
         {Realm::Terra, {
-        {"Tavern", {50, 275, 150, 250}, DARKBROWN, BEIGE, {195, 390, 10, 30}, BROWN},
-        {"Library", {900, 275, 150, 250}, WHITE, LIGHTGRAY, {897, 390, 10, 30}, BROWN},
+            {"gwen", "Tavern", {50, 200, 150, 250}, DARKBROWN, {60, 210, 130, 230}, BEIGE, {110, 440, 30, 20}, BROWN},
+            {"terra_wizard", "Library", {900, 200, 150, 250}, WHITE, {910, 210, 130, 230}, LIGHTGRAY, {960, 440, 30, 20}, BROWN},
         }},
         {Realm::Ignis, {
-        {"Tavern", {50, 275, 150, 250}, DARKBROWN, BEIGE, {195, 390, 10, 30}, BROWN},
-        {"Library", {900, 275, 150, 250}, WHITE, LIGHTGRAY, {897, 390, 10, 30}, BROWN},
+            {"gwen", "Tavern", {50, 200, 150, 250}, DARKBROWN, {60, 210, 130, 230}, BEIGE, {110, 440, 30, 20}, BROWN},
+            {"ignis_wizard", "Library", {900, 200, 150, 250}, WHITE, {910, 210, 130, 230}, LIGHTGRAY, {960, 440, 30, 20}, BROWN},
         }}
     };
 
@@ -103,17 +104,29 @@ DialogueManager::DialogueManager(){}
 
 
 void GameEngine::update() {
-    // Audio update
-    if (m_selectRealm == Realm::Ignis && m_currentState == GameState::Dialogue) UpdateMusicStream(m_ignisSound);
-    else if (m_selectRealm == Realm::Aqua && m_currentState == GameState::Dialogue) UpdateMusicStream(m_aquaSound);
-    else if (m_currentState == GameState::WorldMap){
-        if (!m_dialogueManager.isDialogueActive()){
+    // ==========================================
+    // 1. AUDIO STREAM MANAGEMENT
+    // ==========================================
+    // Handle music playback and stopping based on the current realm and game state
+    if (m_selectRealm == Realm::Ignis && m_currentState == GameState::Dialogue) {
+        UpdateMusicStream(m_ignisSound);
+    }
+    else if (m_selectRealm == Realm::Aqua && m_currentState == GameState::Dialogue) {
+        UpdateMusicStream(m_aquaSound);
+    }
+    else if (m_currentState == GameState::WorldMap) {
+        // Stop music streams if no dialogue is active while on the world map
+        if (!m_dialogueManager.isDialogueActive()) {
             StopMusicStream(m_ignisSound);
             StopMusicStream(m_aquaSound);
         }
     }
 
-    if (m_currentState == GameState::WorldMap || m_currentState == GameState::RegionHub) {
+    // ==========================================
+    // 2. WORLD MAP MOVEMENT
+    // ==========================================
+    // Process player directional input when roaming the world map
+    if (m_currentState == GameState::WorldMap) {
         float velocity = 4.0f;
         Vector2 movement = { 0.0f, 0.0f };
         
@@ -127,7 +140,11 @@ void GameEngine::update() {
         }
     }
 
+    // ==========================================
+    // 3. WORLD MAP REGION SELECTION LOGIC
+    // ==========================================
     if (m_currentState == GameState::WorldMap) {
+        // Check if the player presses [F] to enter a region boundary
         if (IsKeyPressed(KEY_F)) {
             Vector2 playerPos = m_player.getPosition();
             
@@ -135,38 +152,76 @@ void GameEngine::update() {
                 if (CheckCollisionPointRec(playerPos, region.bounds)) {
                     m_selectRealm = region.realm;
                     
+                    // Play realm-specific theme music
                     if (m_selectRealm == Realm::Aqua) PlayMusicStream(m_aquaSound);
                     else if (m_selectRealm == Realm::Ignis) PlayMusicStream(m_ignisSound);
 
+                    // Reposition the player to the center of the selected hub
                     for (const auto& hub : m_regionHub) {
                         if (hub.realm == m_selectRealm) {
                             m_player.setPosition({
                                 hub.rectangle.x + (hub.rectangle.width / 2),
-                                hub.rectangle.y + (hub.rectangle.height /2)
+                                hub.rectangle.y + (hub.rectangle.height / 2)
                             });
                             break;
                         }
                     }
 
+                    // Switch state to RegionHub
                     m_currentState = GameState::RegionHub;
                     break;
                 }
             }
         }
     }
+    // ==========================================
+    // 4. REGION HUB LOGIC (Movement & Collisions)
+    // ==========================================
     else if (m_currentState == GameState::RegionHub) {
         Vector2 playerPos = m_player.getPosition();
+        float velocity = 4.0f;
+        Vector2 movement = { 0.0f, 0.0f };
+        
+        // Capture input for movement inside the hub
+        if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) movement.y -= 1.0f;
+        if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) movement.y += 1.0f;
+        if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) movement.x -= 1.0f;
+        if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) movement.x += 1.0f;
 
+        // --- BUILDING COLLISION AND STATUS CHECK ---
         for (auto& regionBldg : m_buildings) {
-                    if (regionBldg.realm == m_selectRealm) {
-                        for (auto& bldg : regionBldg.buildings) {
-                            bldg.updateStatus(playerPos);
+            if (regionBldg.realm == m_selectRealm) {
+                for (auto& bldg : regionBldg.buildings) {
+                    
+                    // Update whether the player is inside the building (interior or entrance)
+                    bldg.updateStatus(playerPos);
+
+                    // If the player is outside, exterior walls act as solid obstacles
+                    if (!bldg.isPlayerInside) {
+                        // Project future positions separately on X and Y axes to allow smooth wall sliding
+                        Rectangle playerRectX = { playerPos.x + (movement.x * velocity) - 5.0f, playerPos.y - 7.5f, 10.0f, 15.0f };
+                        Rectangle playerRectY = { playerPos.x - 5.0f, playerPos.y + (movement.y * velocity) - 7.5f, 10.0f, 15.0f };
+
+                        // Stop movement along the respective axis if a collision occurs
+                        if (CheckCollisionRecs(playerRectX, bldg.building)) {
+                            movement.x = 0.0f;
+                        }
+                        if (CheckCollisionRecs(playerRectY, bldg.building)) {
+                            movement.y = 0.0f;
                         }
                     }
                 }
+            }
+        }
 
+        // Apply movement if no collision blocks it
+        if (movement.x != 0.0f || movement.y != 0.0f) {
+            m_player.move({ movement.x * velocity, movement.y * velocity });
+            playerPos = m_player.getPosition(); // Refresh local position reference
+        }
+
+        // --- NPC INTERACTION WITH [F] ---
         if (IsKeyPressed(KEY_F)) {
-            
             RegionHubG* currentHub = nullptr;
             for (auto& hub : m_regionHub) {
                 if (hub.realm == m_selectRealm) {
@@ -176,6 +231,7 @@ void GameEngine::update() {
             }
             if (currentHub) {
                 for (const auto& npc : currentHub->npcs) {
+                    // Define NPC collision bounding box
                     Rectangle npcRec = {
                         npc.npcGraphics.npcPos.x - (npc.npcCollision.x / 2.0f),
                         npc.npcGraphics.npcPos.y - (npc.npcCollision.y / 2.0f),
@@ -183,6 +239,7 @@ void GameEngine::update() {
                         npc.npcCollision.y
                     };
 
+                    // Trigger dialogue if the player interacts within range
                     if (CheckCollisionPointRec(playerPos, npcRec)) {
                         if (m_dialogueManager.loadFromFile(npc.dialogueFile, npc.npcId)){
                             m_dialogueManager.startDialogue(0);
@@ -194,15 +251,22 @@ void GameEngine::update() {
             }
         }
 
+        // --- RETURN TO WORLD MAP WITH [Q] ---
         if (IsKeyPressed(KEY_Q)) {
             m_currentState = GameState::WorldMap;
         }
     }
+    // ==========================================
+    // 5. DIALOGUE STATE MANAGEMENT
+    // ==========================================
     else if (m_currentState == GameState::Dialogue) {
+        // Return to the RegionHub automatically when dialogue ends
         if (!m_dialogueManager.isDialogueActive()){
             m_currentState = GameState::RegionHub;
         }
     }
+    
+    // Update camera target to smoothly follow the player's position
     m_camera.target = m_player.getPosition();
 }
 
@@ -265,6 +329,7 @@ void GameEngine::renderMap() {
 }
 
 void GameEngine::renderRegion() {
+    // Find the color of the current selected region
     Color currentRegionColor = WHITE;
     for (const auto& region : m_regions) {
         if (region.realm == m_selectRealm){
@@ -273,6 +338,7 @@ void GameEngine::renderRegion() {
         }
     }
 
+    // Find the current region hub data
     RegionHubG* currentHub = nullptr;
     for (auto& hub : m_regionHub) {
         if (hub.realm == m_selectRealm) {
@@ -281,66 +347,90 @@ void GameEngine::renderRegion() {
         }
     }
     if (!currentHub) return;
-    Color bldgColor = WHITE;
+
+    // ==========================================
+    // 1. RENDER BUILDINGS (Interiors, Roofs & Doors)
+    // ==========================================
     for (const auto& regionBldg : m_buildings){
         if (regionBldg.realm == m_selectRealm){
             for (auto& bldg : regionBldg.buildings){
-                if (bldg.isPlayerInside) {
-                    bldgColor = bldg.floor;
-                }
-                else {
-                    bldgColor = bldg.roof;
-                }
-                DrawRectangleRec(bldg.building, bldgColor);
-                DrawRectangleLinesEx(bldg.building, 2, BLACK);
-                DrawRectangleRec(bldg.entrance, bldg.door);
-                DrawRectangleLinesEx(bldg.entrance, 1, BLACK);
+                
+                // Always draw the interior floor underneath
+                DrawRectangleRec(bldg.interior, bldg.floor);
+                DrawRectangleLinesEx(bldg.interior, 1, DARKGRAY);
 
-                DrawText(bldg.name.c_str(), bldg.building.x + 10, bldg.building.y - 40, 14, WHITE);
+                // If the player is OUTSIDE, draw the roof/exterior walls and entrance door over it
+                if (!bldg.isPlayerInside) {
+                    DrawRectangleRec(bldg.building, bldg.roof);
+                    DrawRectangleLinesEx(bldg.building, 2, BLACK);
+                    DrawRectangleRec(bldg.entrance, bldg.door);
+                    DrawRectangleLinesEx(bldg.entrance, 1, BLACK);
+                    
+                    DrawText(bldg.name.c_str(), bldg.building.x + 10, bldg.building.y + 10, 14, WHITE);
+                } 
+                else {
+                    // If the player is INSIDE, the roof disappears (cutaway effect), show building name inside
+                    DrawText(bldg.name.c_str(), bldg.interior.x + 10, bldg.interior.y + 10, 14, DARKGRAY);
+                }
             }
         }
     }
     
+    // Draw the main region hub background and boundaries
     DrawRectangleRec(currentHub->rectangle, ColorAlpha(currentRegionColor, 0.2f));
     DrawRectangleLinesEx(currentHub->rectangle, 2, currentRegionColor);
     DrawText(currentHub->name.c_str(), currentHub->rectangle.x + 20, currentHub->rectangle.y + 20, 20, WHITE);
     
     Vector2 playerPos = m_player.getPosition();
     
-    for (const auto& RegionBldg : m_buildings){
-        if (RegionBldg.realm == m_selectRealm){
-            for (const auto& bldg : RegionBldg.buildings){
+    // ==========================================
+    // 2. RENDER NPCs INSIDE BUILDINGS
+    // ==========================================
+    // Render NPCs only if the player is currently inside the building containing them
+    for (const auto& regionBldg : m_buildings) {
+        if (regionBldg.realm == m_selectRealm) {
+            for (const auto& bldg : regionBldg.buildings) {
+                if (bldg.isPlayerInside) {
+                    for (const auto& npcs : currentHub->npcs) {
+                        if (npcs.npcId == bldg.npc) {
+                            Vector2 pos = npcs.npcGraphics.npcPos;
+                            Vector2 size = npcs.npcGraphics.npcRec;
+                            Color col = npcs.npcGraphics.npcColor;
+                            
+                            Rectangle visualRec = {
+                                pos.x - (size.x / 2.0f),
+                                pos.y - (size.y / 2.0f),
+                                size.x,
+                                size.y
+                            };
+                            Rectangle collisionRec = {
+                                pos.x - (npcs.npcCollision.x / 2.0f),
+                                pos.y - (npcs.npcCollision.y / 2.0f),
+                                npcs.npcCollision.x,
+                                npcs.npcCollision.y
+                            };
 
+                            bool isPlayerInRange = CheckCollisionPointRec(playerPos, collisionRec);
+
+                            // Draw NPC visual body and outline
+                            DrawRectangleRec(visualRec, col);
+                            DrawRectangleLinesEx(visualRec, 1, BLACK);
+
+                            // Draw NPC name tag above them
+                            DrawText(npcs.name.c_str(), pos.x - (MeasureText(npcs.name.c_str(), 12) / 2), visualRec.y - 18, 12, WHITE);
+
+                            // Display interaction prompt if player is close enough
+                            if (isPlayerInRange) {
+                                DrawText("Press [F] to talk", pos.x - 45, visualRec.y - 35, 10, YELLOW);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
-
-    for (const auto& npcs : currentHub->npcs) {
-        Vector2 pos = npcs.npcGraphics.npcPos;
-        Vector2 size = npcs.npcGraphics.npcRec;
-        Color col = npcs.npcGraphics.npcColor;
-        Rectangle visualRec = {
-            pos.x - (size.x/2),
-            pos.y - (size.y/2),
-            size.x,
-            size.y
-        };
-        Rectangle collisionRec = {
-            pos.x - (npcs.npcCollision.x / 2.0f),
-            pos.y - (npcs.npcCollision.y / 2.0f),
-            npcs.npcCollision.x,
-            npcs.npcCollision.y
-        };
-
-        bool isPlayerInRange = CheckCollisionPointRec(playerPos, collisionRec);
-
-        DrawRectangleRec(visualRec, col);
-        DrawRectangleLinesEx(visualRec, 1, BLACK);
-
-        DrawText(npcs.name.c_str(), pos.x - (MeasureText(npcs.name.c_str(), 12) / 2), visualRec.y - 18, 12, WHITE);
-
-        if (isPlayerInRange) DrawText("Press [F] to talk", pos.x - 45, visualRec.y - 35, 10, YELLOW);
-    }
+    
+    // Draw the player character
     DrawRectangleV(playerPos, {10.0f, 15.0f}, YELLOW);
 }
 

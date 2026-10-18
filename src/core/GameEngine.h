@@ -14,16 +14,18 @@ enum class GameState {
 };
 
 struct Buildings {
+    std::string npc;
     std::string name;
     Rectangle building;
     Color roof;
+    Rectangle interior;
     Color floor;
     Rectangle entrance;
     Color door;
-    bool isPlayerInside;
+    bool isPlayerInside = false;
 
     void updateStatus(Vector2 playerPos) {
-        isPlayerInside = CheckCollisionPointRec(playerPos, entrance) || CheckCollisionPointRec(playerPos, building);
+        isPlayerInside = CheckCollisionPointRec(playerPos, interior) || CheckCollisionPointRec(playerPos, entrance);
     }
 };
 
