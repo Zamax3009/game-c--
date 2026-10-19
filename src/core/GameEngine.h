@@ -13,6 +13,10 @@ enum class GameState {
     Inventory
 };
 
+struct WallCollider {
+    Rectangle bounds;
+};
+
 struct Buildings {
     std::string npc;
     std::string name;
@@ -23,6 +27,30 @@ struct Buildings {
     Rectangle entrance;
     Color door;
     bool isPlayerInside = false;
+
+    std::vector<WallCollider> walls;
+
+    void generateWalls() {
+        walls.clear();
+        float wallThickness = 2.0f;
+
+        walls.push_back({{ building.x, building.y, building.width, wallThickness }});
+
+        walls.push_back({{ building.x, building.y, wallThickness, building.height }});
+
+        walls.push_back({{ building.x + building.width - wallThickness, building.y, wallThickness, building.height }});
+
+        float leftWidth = entrance.x - building.x;
+        if (leftWidth > 0) {
+            walls.push_back({{ building.x, building.y + building.height - wallThickness, leftWidth, wallThickness }});
+        }
+
+        float rightStartX = entrance.x + entrance.width;
+        float rightWidth = (building.x + building.width) - rightStartX;
+        if (rightWidth > 0) {
+            walls.push_back({{ rightStartX, building.y + building.height - wallThickness, rightWidth, wallThickness }});
+        }
+    }
 
     void updateStatus(Vector2 playerPos) {
         isPlayerInside = CheckCollisionPointRec(playerPos, interior) || CheckCollisionPointRec(playerPos, entrance);
@@ -47,7 +75,6 @@ struct NPCInfo {
     std::string npcId;
     Vector2 npcCollision;
     NPCGraphics npcGraphics;
-
 };
 
 struct RegionMap {
