@@ -15,7 +15,6 @@ GameEngine::GameEngine() : m_player("Pilgrim") {
     m_ignisSound = LoadMusicStream("assets/Ignis_Main_Theme.mp3");
     m_currentState = GameState::WorldMap;
 
-    m_camera.target = m_player.getPosition();
     m_camera.offset = { 1280.0f / 2.0f, 720.0f / 2.0f };
     m_camera.rotation = 0.0f;
     m_camera.zoom = 1.5f;
@@ -129,6 +128,7 @@ void GameEngine::update() {
         Vector2 playerPos = m_player.getPosition();
         float velocity = 4.0f;
         Vector2 movement = { 0.0f, 0.0f };
+        m_camera.target = m_player.getPosition();
         
         if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) movement.y -= 1.0f;
         if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) movement.y += 1.0f;
@@ -164,73 +164,149 @@ void GameEngine::update() {
     }
     // 4. REGION HUB LOGIC
     else if (m_currentState == GameState::RegionHub) {
-        Vector2 playerPos = m_player.getPosition();
-        float velocity = 4.0f;
-        Vector2 movement = { 0.0f, 0.0f };
-        
-        if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) movement.y -= 1.0f;
-        if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) movement.y += 1.0f;
-        if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) movement.x -= 1.0f;
-        if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) movement.x += 1.0f;
 
-        // Player bounding boxes matching top-left render origin
-        Rectangle playerRectX = { playerPos.x + (movement.x * velocity), playerPos.y, 10.0f, 15.0f };
-        Rectangle playerRectY = { playerPos.x, playerPos.y + (movement.y * velocity), 10.0f, 15.0f };
+        RegionHubG* currentHub = nullptr;
+        for (auto& hub : m_regionHub) {
+            if (hub.realm == m_selectRealm) {
+                currentHub = &hub;
+                break;
+            }
+        }
+        if (!currentHub) return;
 
-        // Axis-independent wall collision checks
-        for (auto& regionBldg : m_buildings) {
-            if (regionBldg.realm == m_selectRealm) {
-                for (auto& bldg : regionBldg.buildings) {
-                    bldg.updateStatus(playerPos);
+        if (IsKeyPressed(KEY_Q)) {
+            m_isMapWindowOpen = !m_isMapWindowOpen;
+        }
+        if (!m_isMapWindowOpen) {
+            Vector2 playerPos = m_player.getPosition();
+            float velocity = 4.0f;
+            Vector2 movement = { 0.0f, 0.0f };
+            
+            if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) movement.y -= 1.0f;
+            if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) movement.y += 1.0f;
+            if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) movement.x -= 1.0f;
+            if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) movement.x += 1.0f;
 
-                    for (const auto& wall : bldg.walls) {
-                        if (CheckCollisionRecs(playerRectX, wall.bounds)) {
-                            movement.x = 0.0f;
-                        }
-                        if (CheckCollisionRecs(playerRectY, wall.bounds)) {
-                            movement.y = 0.0f;
+            // Player bounding boxes matching top-left render origin
+            Rectangle playerRectX = { playerPos.x + (movement.x * velocity), playerPos.y, 10.0f, 15.0f };
+            Rectangle playerRectY = { playerPos.x, playerPos.y + (movement.y * velocity), 10.0f, 15.0f };
+
+            // Axis-independent wall collision checks
+            for (auto& regionBldg : m_buildings) {
+                if (regionBldg.realm == m_selectRealm) {
+                    for (auto& bldg : regionBldg.buildings) {
+                        bldg.updateStatus(playerPos);
+
+                        for (const auto& wall : bldg.walls) {
+                            if (CheckCollisionRecs(playerRectX, wall.bounds)) {
+                                movement.x = 0.0f;
+                            }
+                            if (CheckCollisionRecs(playerRectY, wall.bounds)) {
+                                movement.y = 0.0f;
+                            }
                         }
                     }
                 }
             }
-        }
 
-        if (movement.x != 0.0f || movement.y != 0.0f) {
-            m_player.move({ movement.x * velocity, movement.y * velocity });
-        }
+            Rectangle playerFutureX = { playerPos.x + (movement.x * velocity) - 5.0f, playerPos.y - 7.5f, 10.0f, 15.0f };
+            Rectangle playerFutureY = { playerPos.x - 5.0f, playerPos.y + (movement.x * velocity) - 7.5f, 10.0f, 15.0f };
 
-        if (IsKeyPressed(KEY_F)) {
-            RegionHubG* currentHub = nullptr;
-            for (auto& hub : m_regionHub) {
-                if (hub.realm == m_selectRealm) {
-                    currentHub = &hub;
-                    break;
-                }
+            if (playerFutureX.x < currentHub->rectangle.x || (playerFutureX.x + playerFutureX.width) > (currentHub->rectangle.x + currentHub->rectangle.width)) {
+                movement.x = 0.0f;
             }
-            if (currentHub) {
-                for (const auto& npc : currentHub->npcs) {
-                    Rectangle npcRec = {
-                        npc.npcGraphics.npcPos.x - (npc.npcCollision.x / 2.0f),
-                        npc.npcGraphics.npcPos.y - (npc.npcCollision.y / 2.0f),
-                        npc.npcCollision.x,
-                        npc.npcCollision.y
-                    };
 
-                    if (CheckCollisionPointRec(playerPos, npcRec)) {
-                        if (m_dialogueManager.loadFromFile(npc.dialogueFile, npc.npcId)){
-                            m_dialogueManager.startDialogue(0);
-                            m_currentState = GameState::Dialogue;
-                        }
+            if (playerFutureY.y < currentHub->rectangle.y || (playerFutureY.y + playerFutureY.height) > (currentHub->rectangle.y + currentHub->rectangle.height)) {
+                movement.y = 0.0f;
+            }
+
+            if (movement.x != 0.0f || movement.y != 0.0f) {
+                m_player.move({ movement.x * velocity, movement.y * velocity });
+                playerPos = m_player.getPosition();
+            }
+
+            if (IsKeyPressed(KEY_F)) {
+                RegionHubG* currentHub = nullptr;
+                for (auto& hub : m_regionHub) {
+                    if (hub.realm == m_selectRealm) {
+                        currentHub = &hub;
                         break;
                     }
                 }
+                if (currentHub) {
+                    for (const auto& npc : currentHub->npcs) {
+                        Rectangle npcRec = {
+                            npc.npcGraphics.npcPos.x - (npc.npcCollision.x / 2.0f),
+                            npc.npcGraphics.npcPos.y - (npc.npcCollision.y / 2.0f),
+                            npc.npcCollision.x,
+                            npc.npcCollision.y
+                        };
+
+                        if (CheckCollisionPointRec(playerPos, npcRec)) {
+                            if (m_dialogueManager.loadFromFile(npc.dialogueFile, npc.npcId)){
+                                m_dialogueManager.startDialogue(0);
+                                m_currentState = GameState::Dialogue;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
+            Vector2 cameraTarget = m_player.getPosition();
+
+            float halfScreenWidth = (1280.0f / 2.0f) / m_camera.zoom;
+            float halfScreenHeight = (720.0f / 2.0f) / m_camera.zoom;
+
+            float minCameraX = currentHub->rectangle.x + halfScreenWidth;
+            float maxCameraX = currentHub->rectangle.x + currentHub->rectangle.width - halfScreenWidth; 
+            if (cameraTarget.x < minCameraX) cameraTarget.x = minCameraX;
+            if (cameraTarget.x > maxCameraX) cameraTarget.x = maxCameraX;
+            
+            float minCameraY = currentHub->rectangle.y + halfScreenHeight;
+            float maxCameraY = currentHub->rectangle.y + currentHub->rectangle.height - halfScreenHeight; 
+            if (cameraTarget.y < minCameraY) cameraTarget.y = minCameraY;
+            if (cameraTarget.y > maxCameraY) cameraTarget.y = maxCameraY;
+
+            m_camera.target = cameraTarget;
+        }
+        else {
+            if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)){
+                m_mapRow = (m_mapRow - 1 + 2) % 2;
+            }
+            if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)){
+                m_mapRow = (m_mapRow + 1) % 2;
+            }
+            if (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_A)){
+                m_mapCol = (m_mapCol - 1 + 2) % 2;
+            }
+            if (IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D)){
+                m_mapCol = (m_mapRow + 1) % 2;
+            }
+
+            int currentIndex = m_mapRow * 2 + m_mapCol;
+
+            if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_F)){
+                const auto& selectedRegion = m_regions[currentIndex];
+                m_selectRealm = selectedRegion.realm;
+
+                if (m_selectRealm == Realm::Aqua) PlayMusicStream(m_aquaSound);
+                else if (m_selectRealm == Realm::Ignis) PlayMusicStream(m_ignisSound);
+
+                for (const auto& hub : m_regionHub) {
+                    if (hub.realm == m_selectRealm) {
+                        m_player.setPosition({
+                            hub.rectangle.x + (hub.rectangle.width / 2),
+                            hub.rectangle.y + (hub.rectangle.height / 2)
+                        });
+                        break;
+                    }
+                }
+                m_isMapWindowOpen = false;
             }
         }
-
-        if (IsKeyPressed(KEY_Q)) {
-            m_currentState = GameState::WorldMap;
-        }
     }
+
     // 5. DIALOGUE STATE MANAGEMENT
     else if (m_currentState == GameState::Dialogue) {
         if (!m_dialogueManager.isDialogueActive()){
@@ -238,62 +314,71 @@ void GameEngine::update() {
         }
     }
     
-    m_camera.target = m_player.getPosition();
 }
 
 void GameEngine::render() {
     BeginDrawing();
     ClearBackground(DARKGRAY);
-    BeginMode2D(m_camera);
     
-    if (m_currentState == GameState::WorldMap) {
-        rlImGuiBegin();
-        renderMap();
-        rlImGuiEnd();
-    }
-    else if (m_currentState == GameState::RegionHub) {
-        rlImGuiBegin();
+    BeginMode2D(m_camera);
+    if (m_currentState == GameState::RegionHub) {
         renderRegion();
-        rlImGuiEnd();
     }
-
     EndMode2D();
 
-    if (m_currentState == GameState::Dialogue) {
-        rlImGuiBegin();
+    if (m_currentState == GameState::RegionHub && m_isMapWindowOpen) {
+        renderMapWindow();
+    }
+    else if (m_currentState == GameState::Dialogue) {
         renderUI();
-        rlImGuiEnd();
     }
 
     EndDrawing();
 }
 
-void GameEngine::renderMap() {
-    Vector2 playerPos = m_player.getPosition();
-    DrawText("World map: choose a destination", 450, 40, 20, WHITE);
-    for (const auto& region : m_regions){
-        bool isPlayerInside = CheckCollisionPointRec(playerPos, region.bounds);
+void GameEngine::renderMapWindow() {
+    DrawRectangle(0, 0, 1280, 720, Fade(BLACK, 0.6f));
 
-        renderColor = region.color;
-        if (isPlayerInside){
-            renderColor = ColorAlpha(region.color, 0.6f);
-        }
+    float boxWidth = 500.0f;
+    float boxHeight = 400.0f;
+    float boxX = (1280.0f - boxWidth) / 2.0f;
+    float boxY = (720.0f - boxHeight) / 2.0f;
 
-        DrawRectangleRec(region.bounds, renderColor);
-        
-        Color borderColor = isPlayerInside ? WHITE : BLACK;
-        int borderWidth = isPlayerInside ? 3 : 1;
-        
-        DrawRectangleLinesEx(region.bounds, borderWidth, borderColor);
+    DrawRectangle(boxX, boxY, boxWidth, boxHeight, DARKGRAY);
+    DrawRectangleLines(boxX, boxY, boxWidth, boxHeight, WHITE);
 
-        DrawText(region.name.c_str(), region.bounds.x + 15, region.bounds.y + 15, 14, WHITE);
+    DrawText("Fast Travel - Select a Region", boxX + 40, boxY + 20, 20, WHITE);
+    DrawText("Use WASD to move, Press [F] to travel", boxX + 40, boxY + 50, 12, LIGHTGRAY);
 
-        if (isPlayerInside) {
-            DrawText("Press [F] to enter...", region.bounds.x + 20, region.bounds.y + 60, 14, LIGHTGRAY);
+    float cellWidth = 200.0f;
+    float cellHeight = 120.0f;
+    float startX = boxX + 45.0f;
+    float startY = boxY + 85.0f;
+
+    for (int row = 0; row < 2; row++) {
+        for (int col = 0; col < 2; col++) {
+            int index = row * 2 + col;
+            if (index >= m_regions.size()) continue;
+
+            const auto& region = m_regions[index];
+            bool isSelected = (m_mapRow == row && m_mapCol == col);
+
+            float x = startX + col * (cellWidth + 10.0f);
+            float y = startY + row * (cellHeight + 10.0f);
+
+            Color cellColor = isSelected ? GOLD : LIGHTGRAY;
+            Color textcolor = isSelected ? BLACK : DARKGRAY;
+
+            DrawRectangle(x, y, cellWidth, cellHeight, cellColor);
+            DrawRectangleLines(x, y, cellWidth, cellHeight, BLACK);
+
+            DrawText(region.name.c_str(), x + 15, y + 20, 18, textcolor);
+
+            if (isSelected) {
+                DrawText("[ SELECTED ]", x + 15, y + 80, 14, RED);
+            }
         }
     }
-
-    DrawRectangleV(playerPos, {10.0, 15.0}, YELLOW);
 }
 
 void GameEngine::renderRegion() {

@@ -101,7 +101,7 @@ public:
 private:
     void update();
     void render();
-    void renderMap();
+    void renderMapWindow();
     void renderRegion();
     void renderUI();
 
@@ -117,6 +117,9 @@ private:
     Music m_ignisSound;
     Music m_aquaSound;
     Camera2D m_camera;
+    bool m_isMapWindowOpen = false;
+    int m_mapRow = 0;
+    int m_mapCol = 0;
 };
 
 #endif
