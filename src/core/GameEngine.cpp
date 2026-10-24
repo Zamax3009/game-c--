@@ -324,16 +324,52 @@ void GameEngine::render() {
     if (m_currentState == GameState::RegionHub) {
         renderRegion();
     }
+    else if (m_currentState == GameState::WorldMap) {
+        renderMap();
+    }
     EndMode2D();
 
-    if (m_currentState == GameState::RegionHub && m_isMapWindowOpen) {
-        renderMapWindow();
+    if (m_currentState == GameState::RegionHub) {
+        if (m_isMapWindowOpen){
+            renderMapWindow();
+        } else {
+            renderMinimap();
+        }
+        
     }
     else if (m_currentState == GameState::Dialogue) {
         renderUI();
     }
 
     EndDrawing();
+}
+
+void GameEngine::renderMap() {
+    Vector2 playerPos = m_player.getPosition();
+    DrawText("World map: choose a destination", 450, 40, 20, WHITE);
+    for (const auto& region : m_regions){
+        bool isPlayerInside = CheckCollisionPointRec(playerPos, region.bounds);
+
+        renderColor = region.color;
+        if (isPlayerInside){
+            renderColor = ColorAlpha(region.color, 0.6f);
+        }
+
+        DrawRectangleRec(region.bounds, renderColor);
+        
+        Color borderColor = isPlayerInside ? WHITE : BLACK;
+        int borderWidth = isPlayerInside ? 3 : 1;
+        
+        DrawRectangleLinesEx(region.bounds, borderWidth, borderColor);
+
+        DrawText(region.name.c_str(), region.bounds.x + 15, region.bounds.y + 15, 14, WHITE);
+
+                if (isPlayerInside) {
+            DrawText("Press [F] to enter...", region.bounds.x + 20, region.bounds.y + 60, 14, LIGHTGRAY);
+        }
+    }
+
+    DrawRectangleV(playerPos, {10.0, 15.0}, YELLOW);
 }
 
 void GameEngine::renderMapWindow() {
@@ -379,6 +415,75 @@ void GameEngine::renderMapWindow() {
             }
         }
     }
+}
+
+void GameEngine::renderMinimap() {
+    float mmWidth = 200.0f;
+    float mmHeight = 150.0f;
+    float mmX = 1280.0f - mmWidth - 20.0f;
+    float mmY = 20.0f;
+
+    DrawRectangle(mmX, mmY, mmWidth, mmHeight, Fade(BLACK, 0.7f));
+    DrawRectangleLines(mmX, mmY, mmWidth, mmHeight, WHITE);
+    DrawText("MINIMAP", mmX + 10, mmY + 10, 10, LIGHTGRAY);
+
+    BeginScissorMode(static_cast<int>(mmX), static_cast<int>(mmY), static_cast<int>(mmWidth), static_cast<int>(mmHeight));
+
+    RegionHubG* currentHub = nullptr;
+    for (auto& hub : m_regionHub) {
+        if (hub.realm == m_selectRealm) {
+            currentHub = &hub;
+            break;
+        }
+    }
+    if (currentHub && currentHub->rectangle.width > 0 && currentHub->rectangle.height > 0) {
+        const RegionBuildings* currentRegionBuildings = nullptr;
+        for (const auto& rb : m_buildings) {
+            if (rb.realm == m_selectRealm) {
+                currentRegionBuildings = &rb;
+                break;
+            }
+        }
+
+        if (currentRegionBuildings) {
+            for (const auto& b : currentRegionBuildings->buildings) {
+                Rectangle bRec = b.building;
+
+                float normBX = (bRec.x - currentHub->rectangle.x) / currentHub->rectangle.width;
+                float normBY = (bRec.y - currentHub->rectangle.y) / currentHub->rectangle.height;
+                float normBW = bRec.width / currentHub->rectangle.width;
+                float normBH = bRec.height / currentHub->rectangle.height;
+
+                float bDrawX = mmX + (normBX * mmWidth);
+                float bDrawY = mmY + (normBY * mmHeight);
+                float bDrawW = normBW * mmWidth;
+                float bDrawH = normBH * mmHeight;
+
+                DrawRectangle(bDrawX, bDrawY, bDrawW, bDrawH, b.roof);
+
+                float normEntX = (b.entrance.x - currentHub->rectangle.x) / currentHub->rectangle.width;
+                float normEntY = (b.entrance.y - currentHub->rectangle.y) / currentHub->rectangle.height;
+                float normEntW = b.entrance.width / currentHub->rectangle.width;
+                float normEntH = b.entrance.height / currentHub->rectangle.height;
+
+                float drawEntX = mmX + (normEntX * mmWidth);
+                float drawEntY = mmY + (normEntY * mmHeight);
+                float drawEntW = normEntW * mmWidth;
+                float drawEntH = normEntH * mmHeight;
+
+                DrawRectangle(drawEntX, drawEntY, drawEntW, drawEntH, b.door);
+            }
+        }
+
+        Vector2 playerPos = m_player.getPosition();
+        float normX = (playerPos.x - currentHub->rectangle.x) / currentHub->rectangle.width;
+        float normY = (playerPos.y - currentHub->rectangle.y) / currentHub->rectangle.height;
+        float dotX = mmX + (normX * mmWidth);
+        float dotY = mmY + (normY * mmHeight);
+
+        DrawCircle(dotX, dotY, 4.0f, RED);
+    }
+    EndScissorMode();
 }
 
 void GameEngine::renderRegion() {

@@ -101,9 +101,11 @@ public:
 private:
     void update();
     void render();
+    void renderMap();
     void renderMapWindow();
     void renderRegion();
     void renderUI();
+    void renderMinimap();
 
     Player m_player;
     DialogueManager m_dialogueManager;
