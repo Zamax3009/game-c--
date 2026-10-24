@@ -13,6 +13,22 @@ enum class GameState {
     Inventory
 };
 
+
+struct Item {
+    std::string name;
+    std::string description;
+    int quantity;
+};
+
+struct WorldItem {
+    std::string name;
+    std::string description;
+    int quantity;
+    Vector2 position;
+    Realm realm;
+    bool isCollected = false;
+};
+
 struct WallCollider {
     Rectangle bounds;
 };
@@ -101,11 +117,13 @@ public:
 private:
     void update();
     void render();
+    void renderInventory();
     void renderMap();
     void renderMapWindow();
     void renderRegion();
     void renderUI();
     void renderMinimap();
+    
 
     Player m_player;
     DialogueManager m_dialogueManager;
@@ -114,6 +132,8 @@ private:
     std::vector<RegionMap> m_regions;
     std::vector<RegionHubG> m_regionHub;
     std::vector<RegionBuildings> m_buildings;
+    std::vector<Item> m_inventory;
+    std::vector<WorldItem> m_worldItems;
     Realm m_selectRealm;
     Color renderColor;
     Music m_ignisSound;

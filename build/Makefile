@@ -400,6 +400,54 @@ src/core/GameEngine.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyElementalRPG.dir\build.make CMakeFiles/MyElementalRPG.dir/src/core/GameEngine.cpp.s
 .PHONY : src/core/GameEngine.cpp.s
 
+src/core/GameEngine_Render.obj: src/core/GameEngine_Render.cpp.obj
+.PHONY : src/core/GameEngine_Render.obj
+
+# target to build an object file
+src/core/GameEngine_Render.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyElementalRPG.dir\build.make CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Render.cpp.obj
+.PHONY : src/core/GameEngine_Render.cpp.obj
+
+src/core/GameEngine_Render.i: src/core/GameEngine_Render.cpp.i
+.PHONY : src/core/GameEngine_Render.i
+
+# target to preprocess a source file
+src/core/GameEngine_Render.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyElementalRPG.dir\build.make CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Render.cpp.i
+.PHONY : src/core/GameEngine_Render.cpp.i
+
+src/core/GameEngine_Render.s: src/core/GameEngine_Render.cpp.s
+.PHONY : src/core/GameEngine_Render.s
+
+# target to generate assembly for a file
+src/core/GameEngine_Render.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyElementalRPG.dir\build.make CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Render.cpp.s
+.PHONY : src/core/GameEngine_Render.cpp.s
+
+src/core/GameEngine_Update.obj: src/core/GameEngine_Update.cpp.obj
+.PHONY : src/core/GameEngine_Update.obj
+
+# target to build an object file
+src/core/GameEngine_Update.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyElementalRPG.dir\build.make CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Update.cpp.obj
+.PHONY : src/core/GameEngine_Update.cpp.obj
+
+src/core/GameEngine_Update.i: src/core/GameEngine_Update.cpp.i
+.PHONY : src/core/GameEngine_Update.i
+
+# target to preprocess a source file
+src/core/GameEngine_Update.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyElementalRPG.dir\build.make CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Update.cpp.i
+.PHONY : src/core/GameEngine_Update.cpp.i
+
+src/core/GameEngine_Update.s: src/core/GameEngine_Update.cpp.s
+.PHONY : src/core/GameEngine_Update.s
+
+# target to generate assembly for a file
+src/core/GameEngine_Update.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyElementalRPG.dir\build.make CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Update.cpp.s
+.PHONY : src/core/GameEngine_Update.cpp.s
+
 src/dialogue/DialogueManager.obj: src/dialogue/DialogueManager.cpp.obj
 .PHONY : src/dialogue/DialogueManager.obj
 
@@ -511,6 +559,12 @@ help:
 	@echo ... src/core/GameEngine.obj
 	@echo ... src/core/GameEngine.i
 	@echo ... src/core/GameEngine.s
+	@echo ... src/core/GameEngine_Render.obj
+	@echo ... src/core/GameEngine_Render.i
+	@echo ... src/core/GameEngine_Render.s
+	@echo ... src/core/GameEngine_Update.obj
+	@echo ... src/core/GameEngine_Update.i
+	@echo ... src/core/GameEngine_Update.s
 	@echo ... src/dialogue/DialogueManager.obj
 	@echo ... src/dialogue/DialogueManager.i
 	@echo ... src/dialogue/DialogueManager.s

@@ -86,11 +86,41 @@ CMakeFiles/MyElementalRPG.dir/src/core/GameEngine.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/MyElementalRPG.dir/src/core/GameEngine.cpp.s"
 	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\szamb\Documents\Andrea\game c++\src\core\GameEngine.cpp" -o CMakeFiles\MyElementalRPG.dir\src\core\GameEngine.cpp.s
 
+CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Render.cpp.obj: CMakeFiles/MyElementalRPG.dir/flags.make
+CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Render.cpp.obj: CMakeFiles/MyElementalRPG.dir/includes_CXX.rsp
+CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Render.cpp.obj: C:/Users/szamb/Documents/Andrea/game\ c++/src/core/GameEngine_Render.cpp
+CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Render.cpp.obj: CMakeFiles/MyElementalRPG.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Render.cpp.obj"
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Render.cpp.obj -MF CMakeFiles\MyElementalRPG.dir\src\core\GameEngine_Render.cpp.obj.d -o CMakeFiles\MyElementalRPG.dir\src\core\GameEngine_Render.cpp.obj -c "C:\Users\szamb\Documents\Andrea\game c++\src\core\GameEngine_Render.cpp"
+
+CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Render.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Render.cpp.i"
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\szamb\Documents\Andrea\game c++\src\core\GameEngine_Render.cpp" > CMakeFiles\MyElementalRPG.dir\src\core\GameEngine_Render.cpp.i
+
+CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Render.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Render.cpp.s"
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\szamb\Documents\Andrea\game c++\src\core\GameEngine_Render.cpp" -o CMakeFiles\MyElementalRPG.dir\src\core\GameEngine_Render.cpp.s
+
+CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Update.cpp.obj: CMakeFiles/MyElementalRPG.dir/flags.make
+CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Update.cpp.obj: CMakeFiles/MyElementalRPG.dir/includes_CXX.rsp
+CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Update.cpp.obj: C:/Users/szamb/Documents/Andrea/game\ c++/src/core/GameEngine_Update.cpp
+CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Update.cpp.obj: CMakeFiles/MyElementalRPG.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Update.cpp.obj"
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Update.cpp.obj -MF CMakeFiles\MyElementalRPG.dir\src\core\GameEngine_Update.cpp.obj.d -o CMakeFiles\MyElementalRPG.dir\src\core\GameEngine_Update.cpp.obj -c "C:\Users\szamb\Documents\Andrea\game c++\src\core\GameEngine_Update.cpp"
+
+CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Update.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Update.cpp.i"
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\szamb\Documents\Andrea\game c++\src\core\GameEngine_Update.cpp" > CMakeFiles\MyElementalRPG.dir\src\core\GameEngine_Update.cpp.i
+
+CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Update.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Update.cpp.s"
+	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\szamb\Documents\Andrea\game c++\src\core\GameEngine_Update.cpp" -o CMakeFiles\MyElementalRPG.dir\src\core\GameEngine_Update.cpp.s
+
 CMakeFiles/MyElementalRPG.dir/src/dialogue/DialogueManager.cpp.obj: CMakeFiles/MyElementalRPG.dir/flags.make
 CMakeFiles/MyElementalRPG.dir/src/dialogue/DialogueManager.cpp.obj: CMakeFiles/MyElementalRPG.dir/includes_CXX.rsp
 CMakeFiles/MyElementalRPG.dir/src/dialogue/DialogueManager.cpp.obj: C:/Users/szamb/Documents/Andrea/game\ c++/src/dialogue/DialogueManager.cpp
 CMakeFiles/MyElementalRPG.dir/src/dialogue/DialogueManager.cpp.obj: CMakeFiles/MyElementalRPG.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/MyElementalRPG.dir/src/dialogue/DialogueManager.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/MyElementalRPG.dir/src/dialogue/DialogueManager.cpp.obj"
 	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MyElementalRPG.dir/src/dialogue/DialogueManager.cpp.obj -MF CMakeFiles\MyElementalRPG.dir\src\dialogue\DialogueManager.cpp.obj.d -o CMakeFiles\MyElementalRPG.dir\src\dialogue\DialogueManager.cpp.obj -c "C:\Users\szamb\Documents\Andrea\game c++\src\dialogue\DialogueManager.cpp"
 
 CMakeFiles/MyElementalRPG.dir/src/dialogue/DialogueManager.cpp.i: cmake_force
@@ -105,7 +135,7 @@ CMakeFiles/MyElementalRPG.dir/src/entities/Player.cpp.obj: CMakeFiles/MyElementa
 CMakeFiles/MyElementalRPG.dir/src/entities/Player.cpp.obj: CMakeFiles/MyElementalRPG.dir/includes_CXX.rsp
 CMakeFiles/MyElementalRPG.dir/src/entities/Player.cpp.obj: C:/Users/szamb/Documents/Andrea/game\ c++/src/entities/Player.cpp
 CMakeFiles/MyElementalRPG.dir/src/entities/Player.cpp.obj: CMakeFiles/MyElementalRPG.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/MyElementalRPG.dir/src/entities/Player.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/MyElementalRPG.dir/src/entities/Player.cpp.obj"
 	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MyElementalRPG.dir/src/entities/Player.cpp.obj -MF CMakeFiles\MyElementalRPG.dir\src\entities\Player.cpp.obj.d -o CMakeFiles\MyElementalRPG.dir\src\entities\Player.cpp.obj -c "C:\Users\szamb\Documents\Andrea\game c++\src\entities\Player.cpp"
 
 CMakeFiles/MyElementalRPG.dir/src/entities/Player.cpp.i: cmake_force
@@ -120,7 +150,7 @@ CMakeFiles/MyElementalRPG.dir/src/main.cpp.obj: CMakeFiles/MyElementalRPG.dir/fl
 CMakeFiles/MyElementalRPG.dir/src/main.cpp.obj: CMakeFiles/MyElementalRPG.dir/includes_CXX.rsp
 CMakeFiles/MyElementalRPG.dir/src/main.cpp.obj: C:/Users/szamb/Documents/Andrea/game\ c++/src/main.cpp
 CMakeFiles/MyElementalRPG.dir/src/main.cpp.obj: CMakeFiles/MyElementalRPG.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/MyElementalRPG.dir/src/main.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/MyElementalRPG.dir/src/main.cpp.obj"
 	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MyElementalRPG.dir/src/main.cpp.obj -MF CMakeFiles\MyElementalRPG.dir\src\main.cpp.obj.d -o CMakeFiles\MyElementalRPG.dir\src\main.cpp.obj -c "C:\Users\szamb\Documents\Andrea\game c++\src\main.cpp"
 
 CMakeFiles/MyElementalRPG.dir/src/main.cpp.i: cmake_force
@@ -135,7 +165,7 @@ CMakeFiles/MyElementalRPG.dir/external/imgui/imgui.cpp.obj: CMakeFiles/MyElement
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui.cpp.obj: CMakeFiles/MyElementalRPG.dir/includes_CXX.rsp
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui.cpp.obj: C:/Users/szamb/Documents/Andrea/game\ c++/external/imgui/imgui.cpp
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui.cpp.obj: CMakeFiles/MyElementalRPG.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/MyElementalRPG.dir/external/imgui/imgui.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/MyElementalRPG.dir/external/imgui/imgui.cpp.obj"
 	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MyElementalRPG.dir/external/imgui/imgui.cpp.obj -MF CMakeFiles\MyElementalRPG.dir\external\imgui\imgui.cpp.obj.d -o CMakeFiles\MyElementalRPG.dir\external\imgui\imgui.cpp.obj -c "C:\Users\szamb\Documents\Andrea\game c++\external\imgui\imgui.cpp"
 
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui.cpp.i: cmake_force
@@ -150,7 +180,7 @@ CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_demo.cpp.obj: CMakeFiles/MyEl
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_demo.cpp.obj: CMakeFiles/MyElementalRPG.dir/includes_CXX.rsp
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_demo.cpp.obj: C:/Users/szamb/Documents/Andrea/game\ c++/external/imgui/imgui_demo.cpp
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_demo.cpp.obj: CMakeFiles/MyElementalRPG.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_demo.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_demo.cpp.obj"
 	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_demo.cpp.obj -MF CMakeFiles\MyElementalRPG.dir\external\imgui\imgui_demo.cpp.obj.d -o CMakeFiles\MyElementalRPG.dir\external\imgui\imgui_demo.cpp.obj -c "C:\Users\szamb\Documents\Andrea\game c++\external\imgui\imgui_demo.cpp"
 
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_demo.cpp.i: cmake_force
@@ -165,7 +195,7 @@ CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_draw.cpp.obj: CMakeFiles/MyEl
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_draw.cpp.obj: CMakeFiles/MyElementalRPG.dir/includes_CXX.rsp
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_draw.cpp.obj: C:/Users/szamb/Documents/Andrea/game\ c++/external/imgui/imgui_draw.cpp
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_draw.cpp.obj: CMakeFiles/MyElementalRPG.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_draw.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_draw.cpp.obj"
 	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_draw.cpp.obj -MF CMakeFiles\MyElementalRPG.dir\external\imgui\imgui_draw.cpp.obj.d -o CMakeFiles\MyElementalRPG.dir\external\imgui\imgui_draw.cpp.obj -c "C:\Users\szamb\Documents\Andrea\game c++\external\imgui\imgui_draw.cpp"
 
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_draw.cpp.i: cmake_force
@@ -180,7 +210,7 @@ CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_tables.cpp.obj: CMakeFiles/My
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_tables.cpp.obj: CMakeFiles/MyElementalRPG.dir/includes_CXX.rsp
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_tables.cpp.obj: C:/Users/szamb/Documents/Andrea/game\ c++/external/imgui/imgui_tables.cpp
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_tables.cpp.obj: CMakeFiles/MyElementalRPG.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_tables.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_tables.cpp.obj"
 	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_tables.cpp.obj -MF CMakeFiles\MyElementalRPG.dir\external\imgui\imgui_tables.cpp.obj.d -o CMakeFiles\MyElementalRPG.dir\external\imgui\imgui_tables.cpp.obj -c "C:\Users\szamb\Documents\Andrea\game c++\external\imgui\imgui_tables.cpp"
 
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_tables.cpp.i: cmake_force
@@ -195,7 +225,7 @@ CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_widgets.cpp.obj: CMakeFiles/M
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_widgets.cpp.obj: CMakeFiles/MyElementalRPG.dir/includes_CXX.rsp
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_widgets.cpp.obj: C:/Users/szamb/Documents/Andrea/game\ c++/external/imgui/imgui_widgets.cpp
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_widgets.cpp.obj: CMakeFiles/MyElementalRPG.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_widgets.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_widgets.cpp.obj"
 	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_widgets.cpp.obj -MF CMakeFiles\MyElementalRPG.dir\external\imgui\imgui_widgets.cpp.obj.d -o CMakeFiles\MyElementalRPG.dir\external\imgui\imgui_widgets.cpp.obj -c "C:\Users\szamb\Documents\Andrea\game c++\external\imgui\imgui_widgets.cpp"
 
 CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_widgets.cpp.i: cmake_force
@@ -210,7 +240,7 @@ CMakeFiles/MyElementalRPG.dir/external/rlImGui/rlImGui.cpp.obj: CMakeFiles/MyEle
 CMakeFiles/MyElementalRPG.dir/external/rlImGui/rlImGui.cpp.obj: CMakeFiles/MyElementalRPG.dir/includes_CXX.rsp
 CMakeFiles/MyElementalRPG.dir/external/rlImGui/rlImGui.cpp.obj: C:/Users/szamb/Documents/Andrea/game\ c++/external/rlImGui/rlImGui.cpp
 CMakeFiles/MyElementalRPG.dir/external/rlImGui/rlImGui.cpp.obj: CMakeFiles/MyElementalRPG.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/MyElementalRPG.dir/external/rlImGui/rlImGui.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/MyElementalRPG.dir/external/rlImGui/rlImGui.cpp.obj"
 	C:\msys64\ucrt64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MyElementalRPG.dir/external/rlImGui/rlImGui.cpp.obj -MF CMakeFiles\MyElementalRPG.dir\external\rlImGui\rlImGui.cpp.obj.d -o CMakeFiles\MyElementalRPG.dir\external\rlImGui\rlImGui.cpp.obj -c "C:\Users\szamb\Documents\Andrea\game c++\external\rlImGui\rlImGui.cpp"
 
 CMakeFiles/MyElementalRPG.dir/external/rlImGui/rlImGui.cpp.i: cmake_force
@@ -224,6 +254,8 @@ CMakeFiles/MyElementalRPG.dir/external/rlImGui/rlImGui.cpp.s: cmake_force
 # Object files for target MyElementalRPG
 MyElementalRPG_OBJECTS = \
 "CMakeFiles/MyElementalRPG.dir/src/core/GameEngine.cpp.obj" \
+"CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Render.cpp.obj" \
+"CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Update.cpp.obj" \
 "CMakeFiles/MyElementalRPG.dir/src/dialogue/DialogueManager.cpp.obj" \
 "CMakeFiles/MyElementalRPG.dir/src/entities/Player.cpp.obj" \
 "CMakeFiles/MyElementalRPG.dir/src/main.cpp.obj" \
@@ -238,6 +270,8 @@ MyElementalRPG_OBJECTS = \
 MyElementalRPG_EXTERNAL_OBJECTS =
 
 MyElementalRPG.exe: CMakeFiles/MyElementalRPG.dir/src/core/GameEngine.cpp.obj
+MyElementalRPG.exe: CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Render.cpp.obj
+MyElementalRPG.exe: CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Update.cpp.obj
 MyElementalRPG.exe: CMakeFiles/MyElementalRPG.dir/src/dialogue/DialogueManager.cpp.obj
 MyElementalRPG.exe: CMakeFiles/MyElementalRPG.dir/src/entities/Player.cpp.obj
 MyElementalRPG.exe: CMakeFiles/MyElementalRPG.dir/src/main.cpp.obj
@@ -252,7 +286,7 @@ MyElementalRPG.exe: external/raylib/raylib/libraylib.a
 MyElementalRPG.exe: CMakeFiles/MyElementalRPG.dir/linkLibs.rsp
 MyElementalRPG.exe: CMakeFiles/MyElementalRPG.dir/objects1.rsp
 MyElementalRPG.exe: CMakeFiles/MyElementalRPG.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_11) "Linking CXX executable MyElementalRPG.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_13) "Linking CXX executable MyElementalRPG.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\MyElementalRPG.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

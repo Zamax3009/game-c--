@@ -15,6 +15,8 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "C:/Users/szamb/Documents/Andrea/game c++/external/imgui/imgui_widgets.cpp" "CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_widgets.cpp.obj" "gcc" "CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_widgets.cpp.obj.d"
   "C:/Users/szamb/Documents/Andrea/game c++/external/rlImGui/rlImGui.cpp" "CMakeFiles/MyElementalRPG.dir/external/rlImGui/rlImGui.cpp.obj" "gcc" "CMakeFiles/MyElementalRPG.dir/external/rlImGui/rlImGui.cpp.obj.d"
   "C:/Users/szamb/Documents/Andrea/game c++/src/core/GameEngine.cpp" "CMakeFiles/MyElementalRPG.dir/src/core/GameEngine.cpp.obj" "gcc" "CMakeFiles/MyElementalRPG.dir/src/core/GameEngine.cpp.obj.d"
+  "C:/Users/szamb/Documents/Andrea/game c++/src/core/GameEngine_Render.cpp" "CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Render.cpp.obj" "gcc" "CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Render.cpp.obj.d"
+  "C:/Users/szamb/Documents/Andrea/game c++/src/core/GameEngine_Update.cpp" "CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Update.cpp.obj" "gcc" "CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Update.cpp.obj.d"
   "C:/Users/szamb/Documents/Andrea/game c++/src/dialogue/DialogueManager.cpp" "CMakeFiles/MyElementalRPG.dir/src/dialogue/DialogueManager.cpp.obj" "gcc" "CMakeFiles/MyElementalRPG.dir/src/dialogue/DialogueManager.cpp.obj.d"
   "C:/Users/szamb/Documents/Andrea/game c++/src/entities/Player.cpp" "CMakeFiles/MyElementalRPG.dir/src/entities/Player.cpp.obj" "gcc" "CMakeFiles/MyElementalRPG.dir/src/entities/Player.cpp.obj.d"
   "C:/Users/szamb/Documents/Andrea/game c++/src/main.cpp" "CMakeFiles/MyElementalRPG.dir/src/main.cpp.obj" "gcc" "CMakeFiles/MyElementalRPG.dir/src/main.cpp.obj.d"
