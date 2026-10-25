@@ -1,7 +1,5 @@
 #include "Player.h"
 
-Player::Player(const std::string& name) : m_name(name) {}
-
 int Player::getReputation(Realm realm) const {
     switch (realm) {
         case Realm::Aer:   return m_reputation.aer;
@@ -28,11 +26,6 @@ bool Player::payGold(int amount) {
         return true;
     }
     return false;
-}
-
-void Player::takeDamage(int amount) {
-    m_hp -= amount;
-    if (m_hp < 0) m_hp = 0;
 }
 
 void Player::modifyReputation(Realm realm, int amount) {

@@ -51,12 +51,13 @@ void GameEngine::renderCombat() {
 
     DrawRectangle(arenaX, arenaY, arenaWidth, arenaHeight, DARKGRAY);
     DrawRectangleLinesEx({arenaX, arenaY, arenaWidth, arenaHeight}, 2, RED);
-
     DrawText("COMBAT", arenaX + 30, arenaY + 25, 20, RED);
 
-    // ENEMY (RIGHT SIDE)
-    DrawText(m_activeEnemy->getName().c_str(), arenaX + 400, arenaY + 80, 22, RED);
+    DrawText(m_activeEnemy->getName().c_str(), arenaX + 400, arenaY + 40, 20, RED);
+    DrawText(m_player.getName().c_str(), arenaX + 50, arenaY + 40, 20, GOLD);
 
+    // ENEMY (RIGHT SIDE)
+    if (m_currentPhase == CombatPhase::ActionSelect) {
     std::string enemyHP = "HP: " + std::to_string(m_activeEnemy->getHealth()) + " / " + std::to_string(m_activeEnemy->getMaxHealth());
     DrawText(enemyHP.c_str(), arenaX + 400, arenaY + 120, 16, LIGHTGRAY);
 
@@ -80,11 +81,37 @@ void GameEngine::renderCombat() {
     DrawRectangleLines(arenaX + 50, arenaY + 150, playerBarWidth, 18, WHITE);
 
     // CONTROLS
-    DrawRectangle(arenaX + 50, arenaY + 280, 600, 80, Fade(BLACK, 0.5f));
-    DrawRectangleLines(arenaX + 50, arenaY + 280, 600, 80, WHITE);
+    DrawRectangle(arenaX + 50, arenaY + 260, 600, 120, Fade(BLACK, 0.5f));
+    DrawRectangleLines(arenaX + 50, arenaY + 260, 600, 120, WHITE);
 
-    DrawText("Press [A] to Attack", arenaX + 70, arenaY + 300, 16, GREEN);
+    int offsetY = 275;
+    int index = 1;
+    for (const auto& atk : m_player.getAttacks()) {
+        std::string label = "[" + std::to_string(index) + "]" + atk.name + "(Damage: " + std::to_string(atk.damage) + " | Healing: " + std::to_string(atk.healing) + ")";
+        DrawText(label.c_str(), arenaX + 70, arenaY + offsetY, 14, GRAY);
+        offsetY += 25;
+        index++;
+    }
+
     DrawText("Press [R] to Run", arenaX + 370, arenaY + 300, 16, YELLOW);
+    }
+    else if (m_currentPhase == CombatPhase::Victory) {
+        DrawRectangle(arenaX + 50, arenaY + 120, 600, 130, Fade(DARKGREEN, 0.9f));
+        DrawRectangleLines(arenaX+ 50, arenaY + 120, 600, 130, GREEN);
+
+        DrawText("VICTORY!", arenaX + 250, arenaY + 140, 24, GOLD);
+        std::string lootMsg = "You obtained " + std::to_string(m_lastLootGold) + " gold coins!";
+        DrawText(lootMsg.c_str(), arenaX + 190, arenaY + 175, 16, WHITE);
+        DrawText("Press [ENTER] to continue...", arenaX + 180, arenaY + 210, 14, LIGHTGRAY);
+    }
+    else if (m_currentPhase == CombatPhase::Defeat) {
+        DrawRectangle(arenaX + 50, arenaY + 120, 600, 130, Fade(MAROON, 0.9f));
+        DrawRectangleLines(arenaX + 50, arenaY + 120, 600, 130, RED);
+
+        DrawText("DEFEAT!", arenaX + 180, arenaY + 140, 24, RED);
+        DrawText("Your journey doesn't end here! Resume!", arenaX + 150, arenaY + 175, 16, WHITE);
+        DrawText("Press [ENTER] to wake up...", arenaX + 180, arenaY + 210, 14, LIGHTGRAY);
+    }
 }
 
 void GameEngine::renderInventory() {

@@ -3,7 +3,7 @@
 #include "imgui.h"
 #include "rlImGui.h"
 
-GameEngine::GameEngine() : m_player("Pilgrim") {
+GameEngine::GameEngine() {
     InitWindow(1280, 720, "Realms of Elementa - Engine");
     InitAudioDevice();
     SetTargetFPS(60);

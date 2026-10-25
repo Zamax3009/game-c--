@@ -261,26 +261,48 @@ void GameEngine::update() {
         }
     }
     else if (m_currentState == GameState::Combat) {
-        if (m_activeEnemy) {
-            if (IsKeyPressed(KEY_A)) {
-                int playerDamage = 10;
-                m_activeEnemy->takeDamage(playerDamage);
-            
+        if (!m_activeEnemy) return;
+        if (m_currentPhase == CombatPhase::ActionSelect) {
+            const auto& attacks = m_player.getAttacks();
+            int selectedAction = -1;
+
+            if (IsKeyPressed(KEY_ONE) && attacks.size() > 0) selectedAction = 0;
+            else if (IsKeyPressed(KEY_TWO) && attacks.size() > 1) selectedAction = 1;
+            else if (IsKeyPressed(KEY_THREE) && attacks.size() > 2) selectedAction = 2;
+
+            if (selectedAction != -1) {
+                const Attack& chosenAttack = attacks[selectedAction];
+
+                if (chosenAttack.damage > 0) {
+                    m_activeEnemy->takeDamage(chosenAttack.damage);
+                }
+                if (chosenAttack.healing > 0) {
+                    m_player.heal(chosenAttack.healing);
+                }
                 if (m_activeEnemy->getHealth() <= 0) {
-                    m_activeEnemy->setDefeated(true);
-                    m_player.addGold(25);
-                    m_activeEnemy = nullptr;
-                    m_currentState = GameState::RegionHub;
-                } else {
+                        m_activeEnemy->setDefeated(true);
+                        m_lastLootGold = 25;
+                        m_player.addGold(m_lastLootGold);
+                        m_currentPhase = CombatPhase::Victory;
+                    }
+                else {
                     m_player.takeDamage(m_activeEnemy->getAttackPower());
+
                     if (m_player.getHP() <= 0) {
-                        m_activeEnemy = nullptr;
-                        m_currentState = GameState::RegionHub;
+                        m_currentPhase = CombatPhase::Defeat;
                     }
                 }
             }
             if (IsKeyPressed(KEY_R)) {
                 m_activeEnemy = nullptr;
+                m_currentState = GameState::RegionHub;
+            }
+        }
+        else if (m_currentPhase == CombatPhase::Victory) {
+            if (IsKeyPressed(KEY_ENTER)) {
+                m_player.resetHP();
+                m_activeEnemy = nullptr;
+                m_currentPhase = CombatPhase::ActionSelect;
                 m_currentState = GameState::RegionHub;
             }
         }

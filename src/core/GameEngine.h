@@ -14,6 +14,12 @@ enum class GameState {
     Combat
 };
 
+enum class CombatPhase {
+    ActionSelect,
+    Victory,
+    Defeat
+};
+
 class Enemy {
 private:
     std::string m_name;
@@ -50,6 +56,7 @@ public:
     void setHealth(int hp) { m_health = hp; }
     void setDefeated(bool defeated) { m_isDefeated = defeated; }
 };
+
 
 struct Item {
     std::string name;
@@ -167,6 +174,7 @@ private:
     Player m_player;
     DialogueManager m_dialogueManager;
     GameState m_currentState;
+    CombatPhase m_currentPhase = CombatPhase::ActionSelect;
     std::vector<NPCInfo> m_npcs;
     std::vector<RegionMap> m_regions;
     std::vector<RegionHubG> m_regionHub;
@@ -182,6 +190,7 @@ private:
     int m_mapRow = 0;
     int m_mapCol = 0;
     Enemy* m_activeEnemy = nullptr;
+    int m_lastLootGold = 0;
 };
 
 #endif
