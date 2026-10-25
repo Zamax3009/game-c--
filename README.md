@@ -1,36 +1,54 @@
 MyElementalRPG
+MyElementalRPG is a lightweight 2D RPG engine built from scratch in C++ using Raylib. It features a modular state-based architecture, a tactical turn-based combat system, and clean object-oriented design with a retro-minimalist aesthetic.
 
-MyElementalRPG is a modular, retro-minimalist 2D RPG engine built from scratch in C++ using Raylib and CMake. The project emphasizes clean code architecture, strong object-oriented design principles (encapsulation), and a flexible turn-based combat system.
+Motivation
+This project was created to explore custom 2D engine development in C++ without relying on heavy commercial game engines. The primary goal is to practice strong object-oriented design principles, clean data encapsulation, and modular game architectures—all while maintaining a clean, minimalist retro aesthetic focused entirely on performance and gameplay mechanics.
 
-Features
+How to Run
+Download the release .zip archive from the project's Releases page.
 
-State Management: Fluid state machine supporting WorldMap, RegionHub, Inventory, and dynamic Combat states.
+Extract the contents of the .zip file to a folder.
 
-Turn-Based Combat System: Tactical fight loop featuring player skill sets, dynamic damage calculations, enemy counterattacks, and interactive victory/defeat screens.
+Open the extracted folder.
 
-Modular Ability System: Skill sets driven by an extensible Attack structure (damage, healing, and tactical effects).
+Double-click MyElementalRPG.exe to launch the game.
 
-Clean OOP Architecture: Full encapsulation of entities (Player, Enemy) with strict accessors, explicit constructors, and data safety.
+Note: Keep any included .dll files in the same directory as the executable.
 
-Exploration & Minimap: Real-time position tracking, interactive world entities, and dynamic enemy radar overlay using raymath.h.
+Controls
+Exploration & Navigation
+W / A / S / D or Arrow Keys: Move character
 
-Building and Running
+E: Interact with world items
 
+SPACE: Engage enemy in combat (when nearby)
+
+I: Toggle Inventory screen
+
+M: Toggle Map view
+
+Combat System
+1: Quick Strike (Light Attack)
+
+2: Heavy Slash (Strong Attack)
+
+3: Inner Calm (Heal)
+
+ENTER: Confirm / Continue after Victory or Defeat
+
+R / ESC: Flee from battle
+
+Building from Source
 Prerequisites
+C++17 compatible compiler (GCC, Clang, or MSVC)
 
-C++17 compliant compiler (GCC, Clang, MSVC)
+CMake (v3.15+)
 
-CMake (3.15+)
+Raylib library installed
 
-Raylib library installed or accessible
-
-Build Instructions
-
-# Generate build configuration
-cmake -B build
-
-# Build the project executable
-cmake --build build
-
-# Run the game (Linux/macOS)
-./build/MyElementalRPG
+Build Steps
+Bash
+mkdir build
+cd build
+cmake ..
+cmake --build .
