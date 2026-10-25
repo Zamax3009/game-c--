@@ -30,6 +30,8 @@ public:
     int getGold() const { return m_gold; }
     int getReputation(Realm realm) const;
     int getMastery(Realm realm) const;
+    int getHP() const { return m_hp; }
+    int getMaxHP() const { return m_maxHP; }
 
     // SETTERS
     // Resource management
@@ -37,12 +39,16 @@ public:
     bool payGold(int amount);
     void setPosition(Vector2 pos) { m_position = pos; }
     void move(Vector2 offset) { m_position.x += offset.x, m_position.y += offset.y; }
+    void takeDamage(int amount);
+    void resetHP() { m_hp = m_maxHP; }
 
     // Reputation and Elemental Mastery management
     void modifyReputation(Realm realm, int amount);
     void modifyMastery(Realm realm, int amount);
 
 private:
+    int m_hp = 100;
+    int m_maxHP = 100;
     Vector2 m_position;
     std::string m_name;
     int m_gold = 50;

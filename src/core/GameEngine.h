@@ -10,9 +10,46 @@ enum class GameState {
     WorldMap,
     RegionHub,
     Dialogue,
-    Inventory
+    Inventory,
+    Combat
 };
 
+class Enemy {
+private:
+    std::string m_name;
+    int m_level;
+    int m_health;
+    int m_maxHealth;
+    int m_attackPower;
+    Vector2 m_position;
+    Rectangle m_collisionBox;
+    Color m_color;
+    bool m_isDefeated;
+
+public:
+    // Constructor
+    Enemy(std::string name, int level, int hp, int attack, Vector2 pos, Rectangle box, Color col)
+        : m_name(name), m_level(level), m_health(hp), m_maxHealth(hp), m_attackPower(attack), m_position(pos), m_collisionBox(box), m_color(col), m_isDefeated(false) {}
+
+    // Getters
+    std::string getName() const { return m_name; }
+    int getLevel() const { return m_level; }
+    int getHealth() const { return m_health; }
+    int getMaxHealth() const { return m_maxHealth; }
+    int getAttackPower() const { return m_attackPower; }
+    Vector2 getPosition() const { return m_position; }
+    Rectangle getCollisionBox() const { return m_collisionBox; }
+    Color getColor() const { return m_color; }
+    bool isDefeated() const { return m_isDefeated; }
+
+    // Setters
+    void takeDamage(int amount) {
+        m_health -= amount;
+        if (m_health < 0) m_health = 0;
+    }
+    void setHealth(int hp) { m_health = hp; }
+    void setDefeated(bool defeated) { m_isDefeated = defeated; }
+};
 
 struct Item {
     std::string name;
@@ -104,6 +141,7 @@ struct RegionHubG {
     std::string name;
     Realm realm;
     std::vector<NPCInfo> npcs;
+    std::vector<Enemy> enemies;
     Rectangle rectangle;
 };
 
@@ -123,6 +161,7 @@ private:
     void renderRegion();
     void renderUI();
     void renderMinimap();
+    void renderCombat();
     
 
     Player m_player;
@@ -142,6 +181,7 @@ private:
     bool m_isMapWindowOpen = false;
     int m_mapRow = 0;
     int m_mapCol = 0;
+    Enemy* m_activeEnemy = nullptr;
 };
 
 #endif

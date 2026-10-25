@@ -153,6 +153,25 @@ void GameEngine::update() {
                 }
             }
 
+            if (IsKeyPressed(KEY_SPACE)) {
+                for (auto& enemy : currentHub->enemies) {
+                    if (!enemy.isDefeated()) {
+                        Rectangle enemyRec = {
+                            enemy.getPosition().x - (enemy.getCollisionBox().x / 2.0f),
+                            enemy.getPosition().y - (enemy.getCollisionBox().y / 2.0f),
+                            enemy.getCollisionBox().x,
+                            enemy.getCollisionBox().y
+                        };
+
+                        if (CheckCollisionPointRec(playerPos, enemyRec)) {
+                            m_activeEnemy = &enemy;
+                            m_currentState = GameState::Combat;
+                            break;
+                        }
+                    }
+                }
+            }
+
             if (IsKeyPressed(KEY_E)){
                 for (auto& wItem : m_worldItems) {
                     if (!wItem.isCollected && wItem.realm == m_selectRealm) {
@@ -241,5 +260,29 @@ void GameEngine::update() {
             m_currentState = GameState::RegionHub;
         }
     }
-    
+    else if (m_currentState == GameState::Combat) {
+        if (m_activeEnemy) {
+            if (IsKeyPressed(KEY_A)) {
+                int playerDamage = 10;
+                m_activeEnemy->takeDamage(playerDamage);
+            
+                if (m_activeEnemy->getHealth() <= 0) {
+                    m_activeEnemy->setDefeated(true);
+                    m_player.addGold(25);
+                    m_activeEnemy = nullptr;
+                    m_currentState = GameState::RegionHub;
+                } else {
+                    m_player.takeDamage(m_activeEnemy->getAttackPower());
+                    if (m_player.getHP() <= 0) {
+                        m_activeEnemy = nullptr;
+                        m_currentState = GameState::RegionHub;
+                    }
+                }
+            }
+            if (IsKeyPressed(KEY_R)) {
+                m_activeEnemy = nullptr;
+                m_currentState = GameState::RegionHub;
+            }
+        }
+    }
 }

@@ -30,8 +30,61 @@ void GameEngine::render() {
     else if (m_currentState == GameState::Inventory) {
         renderInventory();
     }
+    else if (m_currentState == GameState::Combat) {
+        renderCombat();
+    }
 
     EndDrawing();
+}
+
+void GameEngine::renderCombat() {
+    // BACKGROUND
+
+    DrawRectangle(0, 0, 1280, 720, Fade(BLACK, 0.75f));
+
+    if (!m_activeEnemy) return;
+
+    float arenaWidth = 700.0f;
+    float arenaHeight = 400.0f;
+    float arenaX = (1280.0f - arenaWidth) / 2.0f;
+    float arenaY = (720.0f - arenaHeight) / 2.0f;
+
+    DrawRectangle(arenaX, arenaY, arenaWidth, arenaHeight, DARKGRAY);
+    DrawRectangleLinesEx({arenaX, arenaY, arenaWidth, arenaHeight}, 2, RED);
+
+    DrawText("COMBAT", arenaX + 30, arenaY + 25, 20, RED);
+
+    // ENEMY (RIGHT SIDE)
+    DrawText(m_activeEnemy->getName().c_str(), arenaX + 400, arenaY + 80, 22, RED);
+
+    std::string enemyHP = "HP: " + std::to_string(m_activeEnemy->getHealth()) + " / " + std::to_string(m_activeEnemy->getMaxHealth());
+    DrawText(enemyHP.c_str(), arenaX + 400, arenaY + 120, 16, LIGHTGRAY);
+
+    float barWidth = 220.0f;
+    float hpPercent = static_cast<float>(m_activeEnemy->getHealth()) / static_cast<float>(m_activeEnemy->getMaxHealth());
+
+    DrawRectangle(arenaX + 400, arenaY + 150, barWidth, 18, BLACK);
+    DrawRectangle(arenaX + 400, arenaY + 150, barWidth * hpPercent, 18, RED);
+    DrawRectangleLines(arenaX + 400, arenaY + 150, barWidth, 18, WHITE);
+
+    // PLAYER (LEFT SIDE)
+    DrawText(m_player.getName().c_str(), arenaX + 50, arenaY + 80, 22, GREEN);
+
+    std::string playerHPText = "HP: " + std::to_string(m_player.getHP()) + " / " + std::to_string(m_player.getMaxHP());
+    DrawText(playerHPText.c_str(), arenaX + 50, arenaY + 120, 16, LIGHTGRAY);
+
+    float playerBarWidth = 220.0f;
+    float playerHpPercent = static_cast<float>(m_player.getHP()) / static_cast<float>(m_player.getMaxHP());
+    DrawRectangle(arenaX + 50, arenaY + 150, playerBarWidth, 18, BLACK);
+    DrawRectangle(arenaX + 50, arenaY + 150, playerBarWidth * playerHpPercent, 18, GREEN);
+    DrawRectangleLines(arenaX + 50, arenaY + 150, playerBarWidth, 18, WHITE);
+
+    // CONTROLS
+    DrawRectangle(arenaX + 50, arenaY + 280, 600, 80, Fade(BLACK, 0.5f));
+    DrawRectangleLines(arenaX + 50, arenaY + 280, 600, 80, WHITE);
+
+    DrawText("Press [A] to Attack", arenaX + 70, arenaY + 300, 16, GREEN);
+    DrawText("Press [R] to Run", arenaX + 370, arenaY + 300, 16, YELLOW);
 }
 
 void GameEngine::renderInventory() {
@@ -204,6 +257,17 @@ void GameEngine::renderMinimap() {
             DrawCircle(nDotX, nDotY, 3.0f, BLUE);
         }
 
+        for (const auto& enemy : currentHub->enemies) {
+            if (!enemy.isDefeated()) {
+                float eNormX = (enemy.getPosition().x - currentHub->rectangle.x) / currentHub->rectangle.width;
+                float eNormY = (enemy.getPosition().y - currentHub->rectangle.y) / currentHub->rectangle.height;
+                float eDotX = mmX + (eNormX * mmWidth);
+                float eDotY = mmY + (eNormY * mmHeight);
+
+                DrawCircle(eDotX, eDotY, 3.0f, ORANGE);
+            }
+        }
+
         Vector2 playerPos = m_player.getPosition();
         float normX = (playerPos.x - currentHub->rectangle.x) / currentHub->rectangle.width;
         float normY = (playerPos.y - currentHub->rectangle.y) / currentHub->rectangle.height;
@@ -309,6 +373,23 @@ void GameEngine::renderRegion() {
                         }
                     }
                 }
+            }
+        }
+    }
+    for (const auto& enemy : currentHub->enemies) {
+        if (!enemy.isDefeated()){
+            Rectangle enemyRec = {
+                enemy.getPosition().x - (enemy.getCollisionBox().x / 2.0f),
+                enemy.getPosition().y - (enemy.getCollisionBox().y / 2.0f),
+                enemy.getCollisionBox().x,
+                enemy.getCollisionBox().y
+            };
+
+            DrawRectangleRec(enemyRec, enemy.getColor());
+            DrawRectangleLinesEx(enemyRec, 1, RED);
+            DrawText(enemy.getName().c_str(), enemy.getPosition().x - (MeasureText(enemy.getName().c_str(), 10) / 2), enemyRec.y - 15, 10, WHITE);
+            if (CheckCollisionPointRec(playerPos, enemyRec)) {
+                DrawText("Press [SPACE] to fight", enemy.getPosition().x - 55, enemyRec.y - 30, 10, RED);
             }
         }
     }

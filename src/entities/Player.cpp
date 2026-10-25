@@ -30,6 +30,11 @@ bool Player::payGold(int amount) {
     return false;
 }
 
+void Player::takeDamage(int amount) {
+    m_hp -= amount;
+    if (m_hp < 0) m_hp = 0;
+}
+
 void Player::modifyReputation(Realm realm, int amount) {
     switch (realm) {
         case Realm::Aer:   m_reputation.aer   += amount; break;

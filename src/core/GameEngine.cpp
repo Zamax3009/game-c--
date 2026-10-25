@@ -25,11 +25,16 @@ GameEngine::GameEngine() : m_player("Pilgrim") {
         {"Terra", Realm::Terra, { 640, 100, 640, 310 }, GREEN},
         {"Ignis", Realm::Ignis, { 0, 410, 640, 310 }, ORANGE}
     };
+
     m_regionHub = {
         {
             "Aer", Realm::Aer, {
                 {"Gwen", "Tavern owner", "assets/AerDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 350.0f}, BROWN}},
                 {"Aer Wizard", "Wise old Wizard, keeper of secrets", "assets/AerDialogues.json", "aer_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
+            },
+            {
+                Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED),
+                Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE)
             },
             {0, 100, 1280, 620}
         },
@@ -38,6 +43,10 @@ GameEngine::GameEngine() : m_player("Pilgrim") {
                 {"Gwen", "Tavern owner", "assets/IgnisDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 350.0f}, BROWN}},
                 {"Ignis Wizard", "Wise old Wizard, keeper of secrets", "assets/IgnisDialogues.json", "ignis_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
             },
+            {
+                Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED),
+                Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE)
+            },
             {0, 100, 1280, 620}
         },
         {
@@ -45,12 +54,20 @@ GameEngine::GameEngine() : m_player("Pilgrim") {
                 {"Gwen", "Tavern owner", "assets/AquaDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 350.0f}, BROWN}},
                 {"Aqua Wizard", "Wise old Wizard, keeper of secrets", "assets/AquaDialogues.json", "aqua_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
             },
+            {
+                Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED),
+                Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE)
+            },
             {0, 100, 1280, 620}
         },
         {
             "Terra", Realm::Terra, {
                 {"Gwen", "Tavern owner", "assets/TerraDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 350.0f}, BROWN}},
                 {"Terra Wizard", "Wise old Wizard, keeper of secrets", "assets/TerraDialogues.json", "terra_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
+            },
+            {
+                Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED),
+                Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE)
             },
             {0, 100, 1280, 620}
         }
