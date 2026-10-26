@@ -161,6 +161,11 @@ public:
 
 private:
     void update();
+    void updateWorldMap();
+    void updateRegionHub();
+    void updateDialogue();
+    void updateCombat();
+    void updateInventory();
     void render();
     void renderInventory();
     void renderMap();
@@ -169,6 +174,13 @@ private:
     void renderUI();
     void renderMinimap();
     void renderCombat();
+    void playerMovement(float velocity);
+    void updateCamera(const RegionHubG* currentHub);
+    void updateRegionHubNotMap(RegionHubG* currentHub);
+    
+    int getSelectedAttack();
+    bool checkWallCollision(const Rectangle& rec);
+
     
 
     Player m_player;

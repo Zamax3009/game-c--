@@ -45,7 +45,7 @@ void GameEngine::renderCombat() {
     if (!m_activeEnemy) return;
 
     float arenaWidth = 700.0f;
-    float arenaHeight = 400.0f;
+    float arenaHeight = 450.0f;
     float arenaX = (1280.0f - arenaWidth) / 2.0f;
     float arenaY = (720.0f - arenaHeight) / 2.0f;
 
@@ -58,42 +58,46 @@ void GameEngine::renderCombat() {
 
     // ENEMY (RIGHT SIDE)
     if (m_currentPhase == CombatPhase::ActionSelect) {
-    std::string enemyHP = "HP: " + std::to_string(m_activeEnemy->getHealth()) + " / " + std::to_string(m_activeEnemy->getMaxHealth());
-    DrawText(enemyHP.c_str(), arenaX + 400, arenaY + 120, 16, LIGHTGRAY);
+        std::string enemyHP = "HP: " + std::to_string(m_activeEnemy->getHealth()) + " / " + std::to_string(m_activeEnemy->getMaxHealth());
+        DrawText(enemyHP.c_str(), arenaX + 400, arenaY + 120, 16, LIGHTGRAY);
 
-    float barWidth = 220.0f;
-    float hpPercent = static_cast<float>(m_activeEnemy->getHealth()) / static_cast<float>(m_activeEnemy->getMaxHealth());
+        float barWidth = 220.0f;
+        float hpPercent = static_cast<float>(m_activeEnemy->getHealth()) / static_cast<float>(m_activeEnemy->getMaxHealth());
 
-    DrawRectangle(arenaX + 400, arenaY + 150, barWidth, 18, BLACK);
-    DrawRectangle(arenaX + 400, arenaY + 150, barWidth * hpPercent, 18, RED);
-    DrawRectangleLines(arenaX + 400, arenaY + 150, barWidth, 18, WHITE);
+        DrawRectangle(arenaX + 400, arenaY + 150, barWidth, 18, BLACK);
+        DrawRectangle(arenaX + 400, arenaY + 150, barWidth * hpPercent, 18, RED);
+        DrawRectangleLines(arenaX + 400, arenaY + 150, barWidth, 18, WHITE);
 
-    // PLAYER (LEFT SIDE)
-    DrawText(m_player.getName().c_str(), arenaX + 50, arenaY + 80, 22, GREEN);
+        // PLAYER (LEFT SIDE)
+        DrawText(m_player.getName().c_str(), arenaX + 50, arenaY + 80, 22, GREEN);
 
-    std::string playerHPText = "HP: " + std::to_string(m_player.getHP()) + " / " + std::to_string(m_player.getMaxHP());
-    DrawText(playerHPText.c_str(), arenaX + 50, arenaY + 120, 16, LIGHTGRAY);
+        std::string playerHPText = "HP: " + std::to_string(m_player.getHP()) + " / " + std::to_string(m_player.getMaxHP());
+        DrawText(playerHPText.c_str(), arenaX + 50, arenaY + 120, 16, LIGHTGRAY);
 
-    float playerBarWidth = 220.0f;
-    float playerHpPercent = static_cast<float>(m_player.getHP()) / static_cast<float>(m_player.getMaxHP());
-    DrawRectangle(arenaX + 50, arenaY + 150, playerBarWidth, 18, BLACK);
-    DrawRectangle(arenaX + 50, arenaY + 150, playerBarWidth * playerHpPercent, 18, GREEN);
-    DrawRectangleLines(arenaX + 50, arenaY + 150, playerBarWidth, 18, WHITE);
+        float playerBarWidth = 220.0f;
+        float playerHpPercent = static_cast<float>(m_player.getHP()) / static_cast<float>(m_player.getMaxHP());
+        DrawRectangle(arenaX + 50, arenaY + 150, playerBarWidth, 18, BLACK);
+        DrawRectangle(arenaX + 50, arenaY + 150, playerBarWidth * playerHpPercent, 18, GREEN);
+        DrawRectangleLines(arenaX + 50, arenaY + 150, playerBarWidth, 18, WHITE);
 
-    // CONTROLS
-    DrawRectangle(arenaX + 50, arenaY + 260, 600, 120, Fade(BLACK, 0.5f));
-    DrawRectangleLines(arenaX + 50, arenaY + 260, 600, 120, WHITE);
+        // CONTROLS
+        const auto& attacks = m_player.getAttacks();
+        int attackCount = static_cast<int>(attacks.size());
+        
+        float controlBoxHeight = std::max(120.0f, static_cast<float>(attackCount * 25 + 50));
+        DrawRectangle(arenaX + 50, arenaY + 260, 600, 120, Fade(BLACK, 0.5f));
+        DrawRectangleLines(arenaX + 50, arenaY + 260, 600, 120, WHITE);
 
-    int offsetY = 275;
-    int index = 1;
-    for (const auto& atk : m_player.getAttacks()) {
-        std::string label = "[" + std::to_string(index) + "]" + atk.name + "(Damage: " + std::to_string(atk.damage) + " | Healing: " + std::to_string(atk.healing) + ")";
-        DrawText(label.c_str(), arenaX + 70, arenaY + offsetY, 14, GRAY);
-        offsetY += 25;
-        index++;
-    }
+        int offsetY = 275;
+        int index = 1;
+        for (const auto& atk : m_player.getAttacks()) {
+            std::string label = "[" + std::to_string(index) + "]" + atk.name + "(Damage: " + std::to_string(atk.damage) + " | Healing: " + std::to_string(atk.healing) + ")";
+            DrawText(label.c_str(), arenaX + 70, arenaY + offsetY, 14, GRAY);
+            offsetY += 25;
+            index++;
+        }
 
-    DrawText("Press [R] to Run", arenaX + 370, arenaY + 300, 16, YELLOW);
+        DrawText("Press [R] to Run", arenaX + 370, arenaY + 300, 16, YELLOW);
     }
     else if (m_currentPhase == CombatPhase::Victory) {
         DrawRectangle(arenaX + 50, arenaY + 120, 600, 130, Fade(DARKGREEN, 0.9f));

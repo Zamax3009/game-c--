@@ -130,5 +130,98 @@ void GameEngine::run() {
     }
 }
 
+bool GameEngine::checkWallCollision(const Rectangle& rec) {
+    RegionHubG* currentHub = nullptr;
+    for (auto& hub : m_regionHub) {
+        if (hub.realm == m_selectRealm) {
+            currentHub = &hub;
+            break;
+        }
+    }
+    if (!currentHub) return true;
+
+    if (rec.x < currentHub->rectangle.x ||
+        (rec.x + rec.width) > (currentHub->rectangle.x + currentHub->rectangle.width) ||
+        rec.y < currentHub->rectangle.y ||
+        (rec.y + rec.width) > (currentHub->rectangle.y + currentHub->rectangle.height)) {
+            return true;
+    }
+
+    for (auto& regionBldg : m_buildings) {
+        if (regionBldg.realm == m_selectRealm) {
+            for (auto& bldg : regionBldg.buildings) {
+                for (const auto& wall : bldg.walls) {
+                    if (CheckCollisionRecs(rec, wall.bounds)){
+                        return true;
+                    }
+                }
+                if (CheckCollisionRecs(rec, bldg.entrance) || CheckCollisionRecs(rec, bldg.interior)) {
+                    bldg.isPlayerInside = true;
+                }
+                else {
+                    bldg.isPlayerInside = false;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+void GameEngine::playerMovement(float velocity) {
+    Vector2 playerPos = m_player.getPosition();
+    Vector2 movement = { 0.0f, 0.0f };
+
+    if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) movement.y -= 1.0f;
+    if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) movement.y += 1.0f;
+    if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) movement.x -= 1.0f;
+    if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) movement.x += 1.0f;
+
+    float boxWidth = 10.0f;
+    float boxHeight = 15.0f;
+    float offsetX = boxWidth / 2.0f;
+    float offsetY = boxHeight / 2.0f;
+
+    Rectangle nextRectX = {
+        playerPos.x + (movement.x * velocity) - offsetX,
+        playerPos.y - offsetY,
+        boxWidth,
+        boxHeight
+    };
+
+    if (movement.x != 0.0f && !checkWallCollision(nextRectX)) {
+        m_player.move({ movement.x * velocity, 0.0f});
+    }
+
+    Rectangle nextRectY = {
+        playerPos.x - offsetX,
+        playerPos.y + (movement.y * velocity) - offsetY,
+        boxWidth,
+        boxHeight
+    };
+
+    if (movement.y != 0.0f && !checkWallCollision(nextRectY)) {
+        m_player.move({0.0f, movement.y * velocity});
+    }
+}
+
+int GameEngine::getSelectedAttack() {
+    const auto& attacks = m_player.getAttacks();
+
+    const KeyboardKey attackKeys[] = { 
+        KEY_ONE, KEY_TWO, KEY_THREE, KEY_FOUR, 
+        KEY_FIVE, KEY_SIX, KEY_SEVEN, KEY_EIGHT, KEY_NINE 
+    };
+
+    int maxCheck = std::min(attacks.size(), sizeof(attackKeys) / sizeof(attackKeys[0]));
+    
+    for (int i = 0; i < maxCheck; i++) {
+        if (IsKeyPressed(attackKeys[i])) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 DialogueManager::DialogueManager() {}
 
