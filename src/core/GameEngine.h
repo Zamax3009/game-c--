@@ -14,6 +14,12 @@ enum class GameState {
     Combat
 };
 
+enum class ItemType {
+    None,
+    Heal,
+    RestoreMana
+};
+
 enum class CombatPhase {
     ActionSelect,
     Victory,
@@ -62,6 +68,8 @@ struct Item {
     std::string name;
     std::string description;
     int quantity;
+    ItemType type;
+    int attribute;
 };
 
 struct WorldItem {
@@ -70,6 +78,8 @@ struct WorldItem {
     int quantity;
     Vector2 position;
     Realm realm;
+    ItemType type;
+    int attribute;
     bool isCollected = false;
 };
 
@@ -203,6 +213,7 @@ private:
     int m_mapCol = 0;
     Enemy* m_activeEnemy = nullptr;
     int m_lastLootGold = 0;
+    int m_inventoryIndex = 0;
 };
 
 #endif

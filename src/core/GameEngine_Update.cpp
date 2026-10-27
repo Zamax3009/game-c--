@@ -171,6 +171,51 @@ void GameEngine::updateCombat() {
 void GameEngine::updateInventory() {
     if (IsKeyPressed(KEY_I)){
         m_currentState = GameState::RegionHub;
+        return;
+    }
+
+    if (m_inventory.empty()) return;
+
+    if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
+        m_inventoryIndex = (m_inventoryIndex - 1 + m_inventory.size()) % m_inventory.size();
+    }
+    if (IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN)) {
+        m_inventoryIndex - (m_inventoryIndex + 1) % m_inventory.size();
+    }
+
+    if (IsKeyPressed(KEY_E) || IsKeyPressed(KEY_ENTER)) {
+        auto& item = m_inventory[m_inventoryIndex];
+        bool itemUsed = false;
+
+        switch (item.type)
+        {
+        case ItemType::Heal:
+            m_player.heal(item.attribute);
+            itemUsed = true;
+            break;
+        
+        // MANA NOT ADDED YET :P
+
+        // case ItemType::RestoreMana:
+        //     m_player.modifyMastery(Realm::Aqua, item.attribute);
+        //     itemUsed = true;
+        //     break;
+        // case ItemType::None:
+        default:
+            break;
+        }
+
+        if (itemUsed) {
+            item.quantity--;
+
+            if (item.quantity <= 0) {
+                m_inventory.erase(m_inventory.begin() + m_inventoryIndex);
+                if (m_inventoryIndex >= m_inventory.size() && !m_inventory.empty()) {
+                    m_inventoryIndex = m_inventory.size() - 1;
+                }
+            }
+        }
+        
     }
 }
 

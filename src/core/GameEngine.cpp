@@ -93,17 +93,17 @@ GameEngine::GameEngine() {
     };
 
     m_inventory = {
-        {"Mana Potion", "Restores a small amount of mana.", 3},
-        {"Health Elixir", "Heals a small amount of demege.", 2},
-        {"Ancent Scroll", "contains unreadable runes.", 1},
-        {"Elemental Cristal", "Emits a dimm blue light.", 5}
+        {"Mana Potion", "Restores a small amount of mana.", 0, ItemType::RestoreMana, 35},
+        {"Health Elixir", "Heals a small amount of demege.", 0, ItemType::Heal, 35},
+        {"Ancent Scroll", "contains unreadable runes.", 0, ItemType::None, 0},
+        {"Elemental Cristal", "Emits a dimm blue light.", 0, ItemType::None, 0}
     };
 
     m_worldItems = {
-        {"Mana Potion", "Restores a small amount of mana.", 1, {250.0f, 300.0f}, Realm::Aer, false},
-        {"Health Elixir", "Heals a small amount of demege.", 1, {850.0f, 350.0f}, Realm::Aer, false},
-        {"Ancent Scroll", "contains unreadable runes.", 2, {850.0f, 350.0f}, Realm::Aqua, false},
-        {"Elemental Cristal", "Emits a dimm blue light.", 1, {600.0f, 500.0f}, Realm::Aqua, false}
+        {"Mana Potion", "Restores a small amount of mana.", 1, {250.0f, 300.0f}, Realm::Aer, ItemType::RestoreMana, 35, false},
+        {"Health Elixir", "Heals a small amount of demege.", 1, {850.0f, 350.0f}, Realm::Aer, ItemType::Heal, 35, false},
+        {"Ancent Scroll", "contains unreadable runes.", 2, {850.0f, 350.0f}, Realm::Aqua, ItemType::None, 0, false},
+        {"Elemental Cristal", "Emits a dimm blue light.", 1, {600.0f, 500.0f}, Realm::Aqua, ItemType::None, 0, false}
     };
 
     for(auto& regionBldg : m_buildings) {
@@ -178,12 +178,10 @@ void GameEngine::playerMovement(float velocity) {
 
     float boxWidth = 10.0f;
     float boxHeight = 15.0f;
-    float offsetX = boxWidth / 2.0f;
-    float offsetY = boxHeight / 2.0f;
 
     Rectangle nextRectX = {
-        playerPos.x + (movement.x * velocity) - offsetX,
-        playerPos.y - offsetY,
+        playerPos.x + (movement.x * velocity),
+        playerPos.y,
         boxWidth,
         boxHeight
     };
@@ -193,8 +191,8 @@ void GameEngine::playerMovement(float velocity) {
     }
 
     Rectangle nextRectY = {
-        playerPos.x - offsetX,
-        playerPos.y + (movement.y * velocity) - offsetY,
+        playerPos.x,
+        playerPos.y + (movement.y * velocity),
         boxWidth,
         boxHeight
     };

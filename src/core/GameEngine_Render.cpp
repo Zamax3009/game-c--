@@ -139,13 +139,19 @@ void GameEngine::renderInventory() {
             const auto& item = m_inventory[i];
 
             float itemY = startY + (i * 40.0f);
-            DrawRectangle(invX + 25, itemY, invWidth - 50, 32, Fade(BLACK, 0.3f));
 
-            std::string itemText = item.name + "  x" + std::to_string(item.quantity);
+            Color rowColor = (i == static_cast<size_t>(m_inventoryIndex)) ? Fade(YELLOW, 0.25f) : Fade(BLACK, 0.3f);
+            DrawRectangle(invX + 25, itemY, invWidth - 50, 32, rowColor);
+
+            std::string prefix = (i == static_cast<size_t>(m_inventoryIndex)) ? "> " : "  ";
+            std::string itemText = prefix + item.name + "  x" + std::to_string(item.quantity);
+
+            Color textColor = (i == static_cast<size_t>(m_inventoryIndex)) ? YELLOW : WHITE;
             DrawText(itemText.c_str(), invX + 40, itemY + 8, 14, WHITE);
             DrawText(item.description.c_str(), invX + 250, itemY + 8, 12, LIGHTGRAY);
         }
     }
+    DrawText("Press [ENTER] or [E] to use item", invX + 30, invY + invHeight - 35, 12, YELLOW);
 }
 
 void GameEngine::renderMap() {
@@ -356,7 +362,7 @@ void GameEngine::renderRegion() {
     DrawText(currentHub->name.c_str(), currentHub->rectangle.x + 20, currentHub->rectangle.y + 20, 20, WHITE);
     
     Vector2 playerPos = m_player.getPosition();
-
+    // RENDER ITEMS ON THE GROUND
     for (const auto& wItem : m_worldItems) {
         if (!wItem.isCollected && wItem.realm == m_selectRealm) {
             DrawCircleV(wItem.position, 6.0f, GOLD);
@@ -407,6 +413,9 @@ void GameEngine::renderRegion() {
             }
         }
     }
+
+    // RENDER ENEMIES
+
     for (const auto& enemy : currentHub->enemies) {
         if (!enemy.isDefeated()){
             Rectangle enemyRec = {
@@ -425,7 +434,7 @@ void GameEngine::renderRegion() {
         }
     }
     
-    DrawRectangleV(playerPos, {10.0f, 15.0f}, YELLOW);
+    DrawRectangleRec({playerPos.x, playerPos.y, 10.0f, 15.0f}, YELLOW);
 }
 
 void GameEngine::renderUI() {
