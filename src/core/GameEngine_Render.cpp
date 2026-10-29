@@ -16,6 +16,10 @@ void GameEngine::render() {
     }
     EndMode2D();
 
+    if(m_currentState == GameState::MainMenu) {
+        renderMainMenu();
+    }
+
     if (m_currentState == GameState::RegionHub) {
         if (m_isMapWindowOpen){
             renderMapWindow();
@@ -37,6 +41,24 @@ void GameEngine::render() {
     EndDrawing();
 }
 
+void GameEngine::renderMainMenu() {
+    DrawRectangle(0, 0, 1280, 720, DARKBLUE);
+    DrawText("ELEMENTAL RPG", 1280 / 2 - MeasureText("ELEMENTAL RPG", 40) / 2, 150, 40, GOLD);
+
+    bool saveExists = doesSaveFileExist("savegame.sav");
+
+    Color colorNewGame = (m_menuIndex == 0) ? YELLOW : WHITE;
+    DrawText("> New Adventure", 1280 / 2 - 100, 320, 22, colorNewGame);
+
+    if (saveExists) {
+        Color colorLoadGame = (m_menuIndex == 1) ? YELLOW : WHITE;
+        DrawText("> Load Save File", 1280 / 2 - 100, 370, 22, colorLoadGame);
+    } else {
+        DrawText(" Load Save File (no save file found)", 1280 / 2 - 100, 370, 22, GRAY);
+    }
+    DrawText("Use [W/S] or [Arrow Keys] to navigate, [ENTER] to select", 1280 / 2 - 220, 550, 14, LIGHTGRAY);
+}
+
 void GameEngine::renderCombat() {
     // BACKGROUND
 
@@ -51,7 +73,7 @@ void GameEngine::renderCombat() {
 
     DrawRectangle(arenaX, arenaY, arenaWidth, arenaHeight, DARKGRAY);
     DrawRectangleLinesEx({arenaX, arenaY, arenaWidth, arenaHeight}, 2, RED);
-    DrawText("COMBAT", arenaX + 30, arenaY + 25, 20, RED);
+    DrawText("COMBAT", arenaX + 30, arenaY + 15, 20, RED);
 
     DrawText(m_activeEnemy->getName().c_str(), arenaX + 400, arenaY + 40, 20, RED);
     DrawText(m_player.getName().c_str(), arenaX + 50, arenaY + 40, 20, GOLD);
@@ -64,9 +86,9 @@ void GameEngine::renderCombat() {
         float barWidth = 220.0f;
         float hpPercent = static_cast<float>(m_activeEnemy->getHealth()) / static_cast<float>(m_activeEnemy->getMaxHealth());
 
-        DrawRectangle(arenaX + 400, arenaY + 150, barWidth, 18, BLACK);
-        DrawRectangle(arenaX + 400, arenaY + 150, barWidth * hpPercent, 18, RED);
-        DrawRectangleLines(arenaX + 400, arenaY + 150, barWidth, 18, WHITE);
+        DrawRectangle(arenaX + 400, arenaY + 140, barWidth, 18, BLACK);
+        DrawRectangle(arenaX + 400, arenaY + 140, barWidth * hpPercent, 18, RED);
+        DrawRectangleLines(arenaX + 400, arenaY + 140, barWidth, 18, WHITE);
 
         // PLAYER (LEFT SIDE)
         DrawText(m_player.getName().c_str(), arenaX + 50, arenaY + 80, 22, GREEN);
@@ -76,9 +98,17 @@ void GameEngine::renderCombat() {
 
         float playerBarWidth = 220.0f;
         float playerHpPercent = static_cast<float>(m_player.getHP()) / static_cast<float>(m_player.getMaxHP());
-        DrawRectangle(arenaX + 50, arenaY + 150, playerBarWidth, 18, BLACK);
-        DrawRectangle(arenaX + 50, arenaY + 150, playerBarWidth * playerHpPercent, 18, GREEN);
-        DrawRectangleLines(arenaX + 50, arenaY + 150, playerBarWidth, 18, WHITE);
+        DrawRectangle(arenaX + 50, arenaY + 140, playerBarWidth, 18, BLACK);
+        DrawRectangle(arenaX + 50, arenaY + 140, playerBarWidth * playerHpPercent, 18, GREEN);
+        DrawRectangleLines(arenaX + 50, arenaY + 140, playerBarWidth, 18, WHITE);
+
+        std::string playerManaText = "Mana: " + std::to_string(m_player.getMana()) + " / " + std::to_string(m_player.getMaxMana());
+        DrawText(playerManaText.c_str(), arenaX + 50, arenaY + 170, 16, LIGHTGRAY);
+
+        float playerManaPercent = static_cast<float>(m_player.getMana()) / static_cast<float>(m_player.getMaxMana());
+        DrawRectangle(arenaX + 50, arenaY + 190, playerBarWidth, 18, BLACK);
+        DrawRectangle(arenaX + 50, arenaY + 190, playerBarWidth * playerManaPercent, 18, BLUE);
+        DrawRectangleLines(arenaX + 50, arenaY + 190, playerBarWidth, 18, WHITE);
 
         // CONTROLS
         const auto& attacks = m_player.getAttacks();
@@ -91,13 +121,13 @@ void GameEngine::renderCombat() {
         int offsetY = 275;
         int index = 1;
         for (const auto& atk : m_player.getAttacks()) {
-            std::string label = "[" + std::to_string(index) + "]" + atk.name + "(Damage: " + std::to_string(atk.damage) + " | Healing: " + std::to_string(atk.healing) + ")";
+            std::string label = "[" + std::to_string(index) + "]" + atk.name + "(Damage: " + std::to_string(atk.damage) + " | Healing: " + std::to_string(atk.healing) + ")" + " Mana: " + std::to_string(atk.manaUse);
             DrawText(label.c_str(), arenaX + 70, arenaY + offsetY, 14, GRAY);
             offsetY += 25;
             index++;
         }
 
-        DrawText("Press [R] to Run", arenaX + 370, arenaY + 300, 16, YELLOW);
+        DrawText("Press [R] to Run", arenaX + 430, arenaY + 300, 16, YELLOW);
     }
     else if (m_currentPhase == CombatPhase::Victory) {
         DrawRectangle(arenaX + 50, arenaY + 120, 600, 130, Fade(DARKGREEN, 0.9f));
@@ -453,4 +483,15 @@ void GameEngine::renderUI() {
         }
         ImGui::End();
     }
+}
+
+void GameEngine::renderNotification() {
+    int boxWidth = 200;
+    int boxHeight = 40;
+    int boxX = (1280 - boxWidth) / 2;
+    int boxY = 30;
+
+    DrawRectangle(boxX, boxY, boxWidth, boxHeight, Fade(BLACK, 0.8f));
+    DrawRectangleLines(boxX, boxY, boxWidth, boxHeight, GOLD);
+    DrawText(m_notificationText.c_str(), boxX + 45, boxY + 12, 14, GOLD);
 }

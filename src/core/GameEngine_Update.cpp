@@ -5,27 +5,68 @@
 #include "rlImGui.h"
 
 void GameEngine::update() {
-    // 1. AUDIO STREAM MANAGEMENT
-    
-    // 2. WORLD MAP REGION SELECTION LOGIC
+    // SAVE/LOAD SAVE FILE
+    if (m_currentState == GameState::MainMenu) {
+        updateMainMenu();
+        return;
+    }
+
+    if (IsKeyPressed(KEY_F5)) {
+        saveGame("saveGame.sav");
+        TraceLog(LOG_INFO, "Game saved successsfully.");
+        m_notificationTime = 2.0f;
+    }
+
+    if (m_notificationTime > 0.0f) {
+        m_notificationTime -= GetFrameTime();
+    }
+
+    // WORLD MAP REGION SELECTION LOGIC
     if (m_currentState == GameState::WorldMap) {
         updateWorldMap();
     }
-    // 3. REGION HUB LOGIC
+    // REGION HUB LOGIC
     else if (m_currentState == GameState::RegionHub) {
         updateRegionHub();
     }
-    // 4. DIALOGUE STATE MANAGEMENT
+    // DIALOGUE STATE MANAGEMENT
     else if (m_currentState == GameState::Dialogue) {
         updateDialogue();
     }
-    // 5. INVENTORY STATE MANAGEMENT
+    // INVENTORY STATE MANAGEMENT
     else if (m_currentState == GameState::Inventory) {
         updateInventory();
     }
-    // 5. COMBAT STATE MANAGEMENT
+    // COMBAT STATE MANAGEMENT
     else if (m_currentState == GameState::Combat) {
         updateCombat();
+    }
+}
+
+void GameEngine::updateMainMenu() {
+    bool saveExists = doesSaveFileExist("savegame.sav");
+    int maxOptions = saveExists ? 2 : 1;
+
+    if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)){
+        m_menuIndex = (m_menuIndex - 1 + maxOptions) % maxOptions;
+    }
+    if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) {
+        m_menuIndex = (m_menuIndex + 1) % maxOptions;
+    }
+
+    if (IsKeyPressed(KEY_ENTER)) {
+        if (m_menuIndex == 0) {
+            m_player.resetToDefault();
+            m_inventory.clear();
+            for (auto& wItem : m_worldItems) {
+                wItem.isCollected = false;
+            }
+            m_currentState = GameState::WorldMap;
+        }
+        else if (m_menuIndex == 1 && saveExists) {
+            loadGame("savegame.sav");
+            m_currentState = GameState::RegionHub;
+        }
     }
 }
 
@@ -125,24 +166,26 @@ void GameEngine::updateCombat() {
         if (selectedAction != -1) {
             const auto& attacks = m_player.getAttacks();
             const Attack& chosenAttack = attacks[selectedAction];
-
-            if (chosenAttack.damage > 0) {
-                m_activeEnemy->takeDamage(chosenAttack.damage);
-            }
-            if (chosenAttack.healing > 0) {
-                m_player.heal(chosenAttack.healing);
-            }
-            if (m_activeEnemy->getHealth() <= 0) {
-                    m_activeEnemy->setDefeated(true);
-                    m_lastLootGold = 25;
-                    m_player.addGold(m_lastLootGold);
-                    m_currentPhase = CombatPhase::Victory;
+            if (m_player.getMana() >= chosenAttack.manaUse) {
+                m_player.useMana(chosenAttack.manaUse);
+                if (chosenAttack.damage > 0) {
+                    m_activeEnemy->takeDamage(chosenAttack.damage);
                 }
-            else {
-                m_player.takeDamage(m_activeEnemy->getAttackPower());
+                if (chosenAttack.healing > 0) {
+                    m_player.heal(chosenAttack.healing);
+                }
+                if (m_activeEnemy->getHealth() <= 0) {
+                        m_activeEnemy->setDefeated(true);
+                        m_lastLootGold = 25;
+                        m_player.addGold(m_lastLootGold);
+                        m_currentPhase = CombatPhase::Victory;
+                    }
+                else {
+                    m_player.takeDamage(m_activeEnemy->getAttackPower());
 
-                if (m_player.getHP() <= 0) {
-                    m_currentPhase = CombatPhase::Defeat;
+                    if (m_player.getHP() <= 0) {
+                        m_currentPhase = CombatPhase::Defeat;
+                    }
                 }
             }
         }
@@ -180,7 +223,7 @@ void GameEngine::updateInventory() {
         m_inventoryIndex = (m_inventoryIndex - 1 + m_inventory.size()) % m_inventory.size();
     }
     if (IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN)) {
-        m_inventoryIndex - (m_inventoryIndex + 1) % m_inventory.size();
+        m_inventoryIndex = (m_inventoryIndex + 1) % m_inventory.size();
     }
 
     if (IsKeyPressed(KEY_E) || IsKeyPressed(KEY_ENTER)) {
@@ -194,13 +237,12 @@ void GameEngine::updateInventory() {
             itemUsed = true;
             break;
         
-        // MANA NOT ADDED YET :P
 
-        // case ItemType::RestoreMana:
-        //     m_player.modifyMastery(Realm::Aqua, item.attribute);
-        //     itemUsed = true;
-        //     break;
-        // case ItemType::None:
+        case ItemType::RestoreMana:
+            m_player.addMana(item.attribute);
+            itemUsed = true;
+            break;
+        case ItemType::None:
         default:
             break;
         }
@@ -314,7 +356,7 @@ void GameEngine::updateRegionHubNotMap(RegionHubG* currentHub) {
                         }
                     }
                     if(!found) {
-                        m_inventory.push_back({wItem.name, wItem.description, wItem.quantity});
+                        m_inventory.push_back(createItem(wItem.id, wItem.quantity));
                     }
                     break;
                 }

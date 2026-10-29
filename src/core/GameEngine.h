@@ -7,6 +7,7 @@
 #include "../dialogue/DialogueManager.h"
 
 enum class GameState {
+    MainMenu,
     WorldMap,
     RegionHub,
     Dialogue,
@@ -18,6 +19,14 @@ enum class ItemType {
     None,
     Heal,
     RestoreMana
+};
+
+enum class ItemID {
+    None = 0,
+    HealthElixir,
+    ManaPotion,
+    AncientScroll,
+    ElementalCrystal
 };
 
 enum class CombatPhase {
@@ -65,6 +74,7 @@ public:
 
 
 struct Item {
+    ItemID id;
     std::string name;
     std::string description;
     int quantity;
@@ -73,6 +83,7 @@ struct Item {
 };
 
 struct WorldItem {
+    ItemID id;
     std::string name;
     std::string description;
     int quantity;
@@ -171,12 +182,14 @@ public:
 
 private:
     void update();
+    void updateMainMenu();
     void updateWorldMap();
     void updateRegionHub();
     void updateDialogue();
     void updateCombat();
     void updateInventory();
     void render();
+    void renderMainMenu();
     void renderInventory();
     void renderMap();
     void renderMapWindow();
@@ -184,12 +197,19 @@ private:
     void renderUI();
     void renderMinimap();
     void renderCombat();
+    void renderNotification();
     void playerMovement(float velocity);
     void updateCamera(const RegionHubG* currentHub);
     void updateRegionHubNotMap(RegionHubG* currentHub);
     
     int getSelectedAttack();
     bool checkWallCollision(const Rectangle& rec);
+    Item createItem(ItemID id, int quantity = 1);
+
+    // FILE SAVE
+    bool doesSaveFileExist(const std::string& filename);
+    void saveGame(const std::string& filename);
+    void loadGame(const std::string& filename);
 
     
 
@@ -211,9 +231,12 @@ private:
     bool m_isMapWindowOpen = false;
     int m_mapRow = 0;
     int m_mapCol = 0;
+    int m_menuIndex = 0;
     Enemy* m_activeEnemy = nullptr;
     int m_lastLootGold = 0;
     int m_inventoryIndex = 0;
+    float m_notificationTime = 0;
+    std::string m_notificationText = "";
 };
 
 #endif

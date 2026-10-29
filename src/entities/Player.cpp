@@ -1,5 +1,11 @@
 #include "Player.h"
 
+void Player::resetToDefault() {
+    m_hp = 100.0f;
+    m_gold = 50;
+    m_position = { 200.0f, 200.0f };
+}
+
 int Player::getReputation(Realm realm) const {
     switch (realm) {
         case Realm::Aer:   return m_reputation.aer;

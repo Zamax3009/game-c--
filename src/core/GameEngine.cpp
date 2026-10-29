@@ -2,6 +2,149 @@
 #include "raylib.h"
 #include "imgui.h"
 #include "rlImGui.h"
+#include "fstream"
+#include "sstream"
+
+bool GameEngine::doesSaveFileExist(const std::string& filename) {
+    std::ifstream file(filename);
+    return file.good();
+}
+
+void GameEngine::saveGame(const std::string& filename) {
+    std::ofstream outFile(filename);
+    if (!outFile.is_open()) return;
+
+    outFile << m_player.getHP() << "\n";
+    outFile << m_player.getMaxHP() << "\n";
+    outFile << m_player.getGold() << "\n";
+    
+    Vector2 playerPos = m_player.getPosition();
+    outFile << playerPos.x << " " << playerPos.y << "\n";
+    outFile << static_cast<int>(m_selectRealm) << "\n";
+
+    outFile << m_inventory.size() << "\n";
+    for (const auto& item : m_inventory) {
+        outFile << static_cast<int>(item.id) << "|" << item.quantity << "\n";
+    }
+
+    outFile << m_worldItems.size() << "\n";
+    for (const auto& wItem : m_worldItems) {
+        outFile << (wItem.isCollected ? 1 : 0) << "\n";
+    }
+
+    outFile << m_regionHub.size() << "\n";
+    for (const auto& hub : m_regionHub) {
+        outFile << hub.enemies.size() << "\n";
+        for (const auto& enemy : hub.enemies) {
+            outFile << (enemy.isDefeated() ? 1 : 0) << "\n";
+        }
+    }
+
+    outFile.close();
+    TraceLog(LOG_INFO, "Game saved successfully.");
+}
+
+void GameEngine::loadGame(const std::string& filename) {
+    std::ifstream inFile(filename);
+    if (!inFile.is_open()) {
+        TraceLog(LOG_WARNING, "Save file not found.");
+        return;
+    }
+
+    std::string line;
+
+    auto readLineAsFloat = [&inFile]() -> float {
+        std::string l;
+        if (std::getline(inFile, l)) {
+            try { return std::stof(l); } catch (...) { return 0.0f; }
+        }
+        return 0.0f;
+    };
+
+    auto readLineAsInt = [&inFile]() -> int {
+        std::string l;
+        if (std::getline(inFile, l)) {
+            try { return std::stoi(l); } catch (...) { return 0; }
+        }
+        return 0;
+    };
+
+    float hp = readLineAsFloat();
+    int maxHp = readLineAsFloat();
+    int gold = readLineAsInt();
+
+    m_player.setHP(hp);
+    m_player.setMaxHp(maxHp);
+    m_player.setGold(gold);
+    if (std::getline(inFile, line)) {
+        std::stringstream ss(line);
+        float posX, posY;
+        if (ss >> posX >> posY) {
+            m_player.setPosition({posX, posY});
+        }
+    }
+    int realmInt = readLineAsInt();
+    m_selectRealm = static_cast<Realm>(realmInt);
+
+    int invSize = readLineAsInt();
+    m_inventory.clear();
+    for (int i = 0; i < invSize; ++i) {
+        if (!std::getline(inFile, line)) break;
+
+        std::stringstream ss(line);
+        std::string idStr, qtyStr;
+        if (std::getline(ss, idStr, '|') && std::getline(ss, qtyStr, '|')) {
+            ItemID id = static_cast<ItemID>(std::stoi(idStr));
+            int quantity = std::stoi(qtyStr);
+
+            Item loadedItem = createItem(id, quantity);
+            m_inventory.push_back(loadedItem);
+        }
+    }
+
+    int worldItemsSize = readLineAsInt();
+    for (int i = 0; i < worldItemsSize && i < m_worldItems.size(); i++) {
+        int collectFlag = readLineAsInt();
+        m_worldItems[i].isCollected = (collectFlag == 1);
+    }
+
+    int hubSize = readLineAsInt();
+    for (int h = 0; h < hubSize && h < m_regionHub.size(); h++) {
+        int enemySize = readLineAsInt();
+        for (int e = 0; e < enemySize && e < m_regionHub[h].enemies.size(); e++) {
+            int defeatedFlag = readLineAsInt();
+            m_regionHub[h].enemies[e].setDefeated(defeatedFlag == 1);
+        }
+    }
+
+    m_currentState = GameState::RegionHub;
+    inFile.close();
+    TraceLog(LOG_INFO, "Game loaded successfully!");
+}
+
+Item GameEngine::createItem(ItemID id, int quantity) {
+    switch (id)
+    {
+    case ItemID::ManaPotion:
+        return { ItemID::ManaPotion, "Mana Potion", "Restores a small amount of mana.", quantity, ItemType::RestoreMana, 35};
+        break;
+    
+    case ItemID::HealthElixir:
+        return {ItemID::HealthElixir, "Health Elixir", "Heals a small amount of demege.", quantity, ItemType::Heal, 35};
+        break;
+    
+    case ItemID::AncientScroll:
+        return {ItemID::AncientScroll, "Ancent Scroll", "Contains unreadable runes.", quantity, ItemType::None, 0};
+        break;
+
+    case ItemID::ElementalCrystal:
+        return {ItemID::ElementalCrystal, "Elemental Cristal", "Emits a dimm blue light.", quantity, ItemType::None, 0};
+        break;
+    default:
+        return {ItemID::None, "Unknown", "Unknown item, don't touch", 0, ItemType::None, 0};
+        break;
+    }
+}
 
 GameEngine::GameEngine() {
     InitWindow(1280, 720, "Realms of Elementa - Engine");
@@ -13,7 +156,7 @@ GameEngine::GameEngine() {
     
     m_aquaSound = LoadMusicStream("assets/Aqua_Main_Theme.mp3");
     m_ignisSound = LoadMusicStream("assets/Ignis_Main_Theme.mp3");
-    m_currentState = GameState::WorldMap;
+    m_currentState = GameState::MainMenu;
 
     m_camera.offset = { 1280.0f / 2.0f, 720.0f / 2.0f };
     m_camera.rotation = 0.0f;
@@ -93,17 +236,17 @@ GameEngine::GameEngine() {
     };
 
     m_inventory = {
-        {"Mana Potion", "Restores a small amount of mana.", 0, ItemType::RestoreMana, 35},
-        {"Health Elixir", "Heals a small amount of demege.", 0, ItemType::Heal, 35},
-        {"Ancent Scroll", "contains unreadable runes.", 0, ItemType::None, 0},
-        {"Elemental Cristal", "Emits a dimm blue light.", 0, ItemType::None, 0}
+        {ItemID::ManaPotion, "Mana Potion", "Restores a small amount of mana.", 0, ItemType::RestoreMana, 35},
+        {ItemID::HealthElixir, "Health Elixir", "Heals a small amount of demege.", 0, ItemType::Heal, 35},
+        {ItemID::AncientScroll, "Ancent Scroll", "Contains unreadable runes.", 0, ItemType::None, 0},
+        {ItemID::ElementalCrystal, "Elemental Cristal", "Emits a dimm blue light.", 0, ItemType::None, 0}
     };
 
     m_worldItems = {
-        {"Mana Potion", "Restores a small amount of mana.", 1, {250.0f, 300.0f}, Realm::Aer, ItemType::RestoreMana, 35, false},
-        {"Health Elixir", "Heals a small amount of demege.", 1, {850.0f, 350.0f}, Realm::Aer, ItemType::Heal, 35, false},
-        {"Ancent Scroll", "contains unreadable runes.", 2, {850.0f, 350.0f}, Realm::Aqua, ItemType::None, 0, false},
-        {"Elemental Cristal", "Emits a dimm blue light.", 1, {600.0f, 500.0f}, Realm::Aqua, ItemType::None, 0, false}
+        {ItemID::ManaPotion, "Mana Potion", "Restores a small amount of mana.", 1, {250.0f, 300.0f}, Realm::Aer, ItemType::RestoreMana, 35, false},
+        {ItemID::HealthElixir, "Health Elixir", "Heals a small amount of demege.", 1, {850.0f, 350.0f}, Realm::Aer, ItemType::Heal, 35, false},
+        {ItemID::AncientScroll, "Ancent Scroll", "Contains unreadable runes.", 2, {850.0f, 350.0f}, Realm::Aqua, ItemType::None, 0, false},
+        {ItemID::ElementalCrystal, "Elemental Cristal", "Emits a dimm blue light.", 1, {600.0f, 500.0f}, Realm::Aqua, ItemType::None, 0, false}
     };
 
     for(auto& regionBldg : m_buildings) {
@@ -138,7 +281,7 @@ bool GameEngine::checkWallCollision(const Rectangle& rec) {
             break;
         }
     }
-    if (!currentHub) return true;
+    if (!currentHub) return false;
 
     if (rec.x < currentHub->rectangle.x ||
         (rec.x + rec.width) > (currentHub->rectangle.x + currentHub->rectangle.width) ||
