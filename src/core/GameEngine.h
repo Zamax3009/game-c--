@@ -12,21 +12,8 @@ enum class GameState {
     RegionHub,
     Dialogue,
     Inventory,
-    Combat
-};
-
-enum class ItemType {
-    None,
-    Heal,
-    RestoreMana
-};
-
-enum class ItemID {
-    None = 0,
-    HealthElixir,
-    ManaPotion,
-    AncientScroll,
-    ElementalCrystal
+    Combat,
+    Shop
 };
 
 enum class CombatPhase {
@@ -43,6 +30,7 @@ private:
     int m_maxHealth;
     int m_attackPower;
     Vector2 m_position;
+    Vector2 m_spawnPosition;
     Rectangle m_collisionBox;
     Color m_color;
     bool m_isDefeated;
@@ -73,25 +61,35 @@ public:
 };
 
 
-struct Item {
-    ItemID id;
-    std::string name;
-    std::string description;
-    int quantity;
-    ItemType type;
-    int attribute;
-};
 
-struct WorldItem {
-    ItemID id;
-    std::string name;
-    std::string description;
-    int quantity;
-    Vector2 position;
-    Realm realm;
-    ItemType type;
-    int attribute;
-    bool isCollected = false;
+class WorldItem {
+private:
+    ItemID m_id;
+    std::string m_name;
+    std::string m_description;
+    int m_quantity;
+    Vector2 m_position;
+    Realm m_realm;
+    ItemType m_type;
+    int m_attribute;
+    bool m_isCollected = false;
+public:
+    WorldItem(ItemID id, std::string name, std::string desc, int qty, Vector2 pos, Realm realm, ItemType type, int attr, bool collected = false)
+        : m_id(id), m_name(name),m_description(desc), m_quantity(qty), m_position(pos), m_realm(realm), m_type(type), m_attribute(attr), m_isCollected(collected) {}
+    
+    //GGETTERS
+    ItemID getID() const { return m_id; }
+    std::string getName() const { return m_name; }
+    std::string getDescription() const { return m_description; }
+    int getQuantity() const { return m_quantity; }
+    Vector2 getPosition() const { return m_position; }
+    Realm getRealm() const { return m_realm; }
+    ItemType getType() const { return m_type; }
+    int getAttribute() const { return m_attribute; }
+    bool isCollected() const { return m_isCollected; }
+
+    //SETTERS
+    void setCollected(bool collected) { m_isCollected = collected; }
 };
 
 struct WallCollider {
@@ -143,6 +141,15 @@ struct RegionBuildings {
     std::vector<Buildings> buildings;
 };
 
+struct ShopItem {
+    ItemID id;
+    std::string name;
+    std::string description;
+    int price;
+    ItemType type;
+    int attribute;
+};
+
 struct NPCGraphics {
     Vector2 npcRec;
     Vector2 npcPos;
@@ -188,7 +195,10 @@ private:
     void updateDialogue();
     void updateCombat();
     void updateInventory();
+    void updateShop();
+
     void render();
+    void renderShop();
     void renderMainMenu();
     void renderInventory();
     void renderMap();
@@ -221,8 +231,10 @@ private:
     std::vector<RegionMap> m_regions;
     std::vector<RegionHubG> m_regionHub;
     std::vector<RegionBuildings> m_buildings;
-    std::vector<Item> m_inventory;
+    Inventory m_inventory;
     std::vector<WorldItem> m_worldItems;
+    std::vector<ShopItem> m_shopItems;
+    int m_shopIndex = 0;
     Realm m_selectRealm;
     Color renderColor;
     Music m_ignisSound;

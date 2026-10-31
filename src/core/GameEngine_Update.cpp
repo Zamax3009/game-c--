@@ -41,6 +41,10 @@ void GameEngine::update() {
     else if (m_currentState == GameState::Combat) {
         updateCombat();
     }
+    // SHOP STATE MANAGEMENT
+    else if (m_currentState == GameState::Shop) {
+        updateShop();
+    }
 }
 
 void GameEngine::updateMainMenu() {
@@ -59,7 +63,7 @@ void GameEngine::updateMainMenu() {
             m_player.resetToDefault();
             m_inventory.clear();
             for (auto& wItem : m_worldItems) {
-                wItem.isCollected = false;
+                wItem.setCollected(false);
             }
             m_currentState = GameState::WorldMap;
         }
@@ -217,7 +221,7 @@ void GameEngine::updateInventory() {
         return;
     }
 
-    if (m_inventory.empty()) return;
+    if (m_inventory.isEmpty()) return;
 
     if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
         m_inventoryIndex = (m_inventoryIndex - 1 + m_inventory.size()) % m_inventory.size();
@@ -251,8 +255,8 @@ void GameEngine::updateInventory() {
             item.quantity--;
 
             if (item.quantity <= 0) {
-                m_inventory.erase(m_inventory.begin() + m_inventoryIndex);
-                if (m_inventoryIndex >= m_inventory.size() && !m_inventory.empty()) {
+                m_inventory.removeItem(m_inventoryIndex);
+                if (m_inventoryIndex >= m_inventory.size() && !m_inventory.isEmpty()) {
                     m_inventoryIndex = m_inventory.size() - 1;
                 }
             }
@@ -312,9 +316,13 @@ void GameEngine::updateRegionHubNotMap(RegionHubG* currentHub) {
                 };
 
                 if (CheckCollisionPointRec(playerPos, npcRec)) {
-                    if (m_dialogueManager.loadFromFile(npc.dialogueFile, npc.npcId)){
-                        m_dialogueManager.startDialogue(0);
-                        m_currentState = GameState::Dialogue;
+                    if (npc.npcId == "gwen") {
+                        m_currentState = GameState::Shop;
+                    } else {
+                        if (m_dialogueManager.loadFromFile(npc.dialogueFile, npc.npcId)){
+                            m_dialogueManager.startDialogue(0);
+                            m_currentState = GameState::Dialogue;
+                        }
                     }
                     break;
                 }
@@ -342,29 +350,47 @@ void GameEngine::updateRegionHubNotMap(RegionHubG* currentHub) {
     }
 
     if (IsKeyPressed(KEY_E)){
-        for (auto& wItem : m_worldItems) {
-            if (!wItem.isCollected && wItem.realm == m_selectRealm) {
-                float dist = Vector2Distance(playerPos, wItem.position);
-                if (dist < 35.0f) {
-                    wItem.isCollected = true;
-                    bool found = false;
-                    for (auto& invItem : m_inventory) {
-                        if (invItem.name == wItem.name) {
-                            invItem.quantity += wItem.quantity;
-                            found = true;
-                            break;
-                        }
-                    }
-                    if(!found) {
-                        m_inventory.push_back(createItem(wItem.id, wItem.quantity));
-                    }
-                    break;
-                }
+    for (auto& wItem : m_worldItems) {
+        if (!wItem.isCollected() && wItem.getRealm() == m_selectRealm) {
+            float dist = Vector2Distance(playerPos, wItem.getPosition());
+            if (dist < 35.0f) {
+                wItem.setCollected(true);
+                m_inventory.addItem(createItem(wItem.getID(), wItem.getQuantity()));
+                break;
             }
         }
     }
+}
 
     updateCamera(currentHub);
 }
 
+void GameEngine::updateShop() {
+    if (IsKeyPressed(KEY_I)) {
+        m_currentState = GameState::RegionHub;
+        return;
+    }
 
+    if (m_shopItems.empty()) return;
+
+    if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
+        m_shopIndex = (m_shopIndex - 1 + m_shopItems.size()) % m_shopItems.size();
+    }
+    if (IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN)) {
+        m_shopIndex = (m_shopIndex + 1) % m_shopItems.size();
+    }
+
+    if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_E)) {
+        const auto& shopItem = m_shopItems[m_shopIndex];
+
+        if (m_player.payGold(shopItem.price)) {
+            Item purchasedItem = createItem(shopItem.id, 1);
+            m_inventory.addItem(purchasedItem);
+
+            TraceLog(LOG_INFO, "Item purchased successfully.");
+        } else {
+            TraceLog(LOG_WARNING, "Not enough gold.");
+        }
+    }
+
+}

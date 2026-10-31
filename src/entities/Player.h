@@ -7,6 +7,29 @@
 
 enum class Realm { Aer, Aqua, Terra, Ignis }; // The four realms
 
+enum class ItemType {
+    None,
+    Heal,
+    RestoreMana
+};
+
+enum class ItemID {
+    None = 0,
+    HealthElixir,
+    ManaPotion,
+    AncientScroll,
+    ElementalCrystal
+};
+
+struct Item {
+    ItemID id;
+    std::string name;
+    std::string description;
+    int quantity;
+    ItemType type;
+    int attribute;
+};
+
 struct FactionReputation {
     int aer   = 0;   // From -100 (Ostile) to +100 (Allay)
     int aqua  = 0;
@@ -27,6 +50,51 @@ struct ElementalMastery {
     int aqua  = 0;
     int terra = 0;
     int ignis = 0;
+};
+
+class Inventory {
+private:
+    std::vector<Item> m_items;
+    int m_selectedIndex = 0;
+
+public:
+    Inventory() = default;
+    Inventory(std::initializer_list<Item> items) : m_items(items) {}
+
+    void addItem(const Item& item) {
+        bool found = false;
+        for (auto& invItem : m_items) {
+            if (invItem.id == item.id) {
+                invItem.quantity += item.quantity;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            m_items.push_back(item);
+        }
+    }
+
+    bool removeItem(size_t index, int amount = 1) {
+        if (index >= m_items.size()) return false;
+        m_items[index].quantity -= amount;
+        if (m_items[index].quantity <= 0) {
+            m_items.erase(m_items.begin() + index);
+        }
+        return true;
+    }
+
+    const std::vector<Item>& getItems() const { return m_items; }
+    std::vector<Item> getItemsNonConst() { return m_items; }
+    bool isEmpty() const { return m_items.empty(); }
+    int getIndex() const { return m_selectedIndex; }
+    void setIndex(int idx) { m_selectedIndex = idx; }
+    size_t size() { return m_items.size(); }
+    void clear() { m_items.clear(); }
+
+    Item& operator[](size_t index) { return m_items[index]; }
+    const Item& operator[](size_t index) const { return m_items[index]; }
+    
 };
 
 class Player {

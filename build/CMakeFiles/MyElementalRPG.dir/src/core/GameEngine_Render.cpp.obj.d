@@ -133,4 +133,6 @@ CMakeFiles/MyElementalRPG.dir/src/core/GameEngine_Render.cpp.obj: \
  C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/float.h \
  C:/msys64/ucrt64/include/float.h C:/msys64/ucrt64/include/string.h \
  C:/msys64/ucrt64/include/sec_api/string_s.h \
- C:/msys64/ucrt64/include/assert.h
+ C:/msys64/ucrt64/include/assert.h \
+ C:/Users/szamb/DOCUME~1/Andrea/GAMEC_~1/external/rlImGui/rlImGui.h \
+ C:/Users/szamb/DOCUME~1/Andrea/GAMEC_~1/external/rlImGui/extras/IconsFontAwesome6.h

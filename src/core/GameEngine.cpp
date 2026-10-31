@@ -23,13 +23,13 @@ void GameEngine::saveGame(const std::string& filename) {
     outFile << static_cast<int>(m_selectRealm) << "\n";
 
     outFile << m_inventory.size() << "\n";
-    for (const auto& item : m_inventory) {
+    for (const auto& item : m_inventory.getItems()) {
         outFile << static_cast<int>(item.id) << "|" << item.quantity << "\n";
     }
 
     outFile << m_worldItems.size() << "\n";
     for (const auto& wItem : m_worldItems) {
-        outFile << (wItem.isCollected ? 1 : 0) << "\n";
+        outFile << (wItem.isCollected() ? 1 : 0) << "\n";
     }
 
     outFile << m_regionHub.size() << "\n";
@@ -98,14 +98,14 @@ void GameEngine::loadGame(const std::string& filename) {
             int quantity = std::stoi(qtyStr);
 
             Item loadedItem = createItem(id, quantity);
-            m_inventory.push_back(loadedItem);
+            m_inventory.addItem(loadedItem);
         }
     }
 
     int worldItemsSize = readLineAsInt();
     for (int i = 0; i < worldItemsSize && i < m_worldItems.size(); i++) {
         int collectFlag = readLineAsInt();
-        m_worldItems[i].isCollected = (collectFlag == 1);
+        m_worldItems[i].setCollected(collectFlag == 1);
     }
 
     int hubSize = readLineAsInt();
@@ -247,6 +247,11 @@ GameEngine::GameEngine() {
         {ItemID::HealthElixir, "Health Elixir", "Heals a small amount of demege.", 1, {850.0f, 350.0f}, Realm::Aer, ItemType::Heal, 35, false},
         {ItemID::AncientScroll, "Ancent Scroll", "Contains unreadable runes.", 2, {850.0f, 350.0f}, Realm::Aqua, ItemType::None, 0, false},
         {ItemID::ElementalCrystal, "Elemental Cristal", "Emits a dimm blue light.", 1, {600.0f, 500.0f}, Realm::Aqua, ItemType::None, 0, false}
+    };
+
+    m_shopItems = {
+        {ItemID::ManaPotion, "Mana Potion", "Restores a small amount of mana.", 20, ItemType::RestoreMana, 35},
+        {ItemID::HealthElixir, "Health Elixir", "Heals a small amount of demege.", 20, ItemType::Heal, 35},
     };
 
     for(auto& regionBldg : m_buildings) {

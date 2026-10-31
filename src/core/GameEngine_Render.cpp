@@ -2,6 +2,7 @@
 #include "raylib.h"
 #include "raymath.h"
 #include "imgui.h"
+#include "rlImGui.h"
 
 void GameEngine::render() {
     BeginDrawing();
@@ -15,7 +16,7 @@ void GameEngine::render() {
         renderMap();
     }
     EndMode2D();
-
+    rlImGuiBegin();
     if(m_currentState == GameState::MainMenu) {
         renderMainMenu();
     }
@@ -37,7 +38,10 @@ void GameEngine::render() {
     else if (m_currentState == GameState::Combat) {
         renderCombat();
     }
-
+    else if (m_currentState == GameState::Shop) {
+        renderShop();
+    }
+    rlImGuiEnd();
     EndDrawing();
 }
 
@@ -162,7 +166,7 @@ void GameEngine::renderInventory() {
     DrawText("Press [I] or [ESC] to close", invX + 30, invY + 55, 12, LIGHTGRAY);
 
     float startY = invY + 100.0f;
-    if (m_inventory.empty()) {
+    if (m_inventory.isEmpty()) {
         DrawText("Inventory is empity", invX + 30, startY, 16, WHITE);
     } else {
         for (size_t i = 0; i < m_inventory.size(); i++) {
@@ -394,12 +398,12 @@ void GameEngine::renderRegion() {
     Vector2 playerPos = m_player.getPosition();
     // RENDER ITEMS ON THE GROUND
     for (const auto& wItem : m_worldItems) {
-        if (!wItem.isCollected && wItem.realm == m_selectRealm) {
-            DrawCircleV(wItem.position, 6.0f, GOLD);
-            DrawCircleLines(wItem.position.x, wItem.position.y, 8.0f, WHITE);
-            DrawText(wItem.name.c_str(), wItem.position.x -25, wItem.position.y - 20, 10, YELLOW);
-            if (Vector2Distance(playerPos, wItem.position) < 35.0f) {
-                DrawText("Press [E] to pick up", wItem.position.x -45, wItem.position.y - 35, 10, GREEN);
+        if (!wItem.isCollected() && wItem.getRealm() == m_selectRealm) {
+            DrawCircleV(wItem.getPosition(), 6.0f, GOLD);
+            DrawCircleLines(wItem.getPosition().x, wItem.getPosition().y, 8.0f, WHITE);
+            DrawText(wItem.getName().c_str(), wItem.getPosition().x -25, wItem.getPosition().y - 20, 10, YELLOW);
+            if (Vector2Distance(playerPos, wItem.getPosition()) < 35.0f) {
+                DrawText("Press [E] to pick up", wItem.getPosition().x -45, wItem.getPosition().y - 35, 10, GREEN);
             }
         }
     }
@@ -494,4 +498,37 @@ void GameEngine::renderNotification() {
     DrawRectangle(boxX, boxY, boxWidth, boxHeight, Fade(BLACK, 0.8f));
     DrawRectangleLines(boxX, boxY, boxWidth, boxHeight, GOLD);
     DrawText(m_notificationText.c_str(), boxX + 45, boxY + 12, 14, GOLD);
+}
+
+void GameEngine::renderShop() {
+    DrawRectangle(0, 0, 1280, 720, Fade(BLACK, 0.75f));
+
+    float shopWidth = 650.0f;
+    float shopHeight = 450.0f;
+    float shopX = (1280.0f - shopWidth) / 2.0f;
+    float shopY = (720.0f - shopHeight) / 2.0f;
+
+    DrawRectangle(shopX, shopY, shopWidth, shopHeight, DARKGRAY);
+    DrawRectangleLines(shopX, shopY, shopWidth, shopHeight, GOLD);
+    DrawText("MERCHANT SHOP", shopX + 30, shopY + 25, 22, GOLD);
+
+    std::string goldText = "Gold: " + std::to_string(m_player.getGold()) + " coins";
+    DrawText(goldText.c_str(), shopX + shopWidth - 180, shopY + 28, 16, YELLOW);
+    DrawText("Press [I] to exit", shopX + 30, shopY + 55, 12, LIGHTGRAY);
+
+    float startY = shopY + 100.0f;
+    for (size_t i = 0; i < m_shopItems.size(); i++) {
+        const auto& item = m_shopItems[i];
+        float itemY = startY + (i * 50.0f);
+
+        Color rowColor = (i == static_cast<size_t>(m_shopIndex)) ? Fade(GOLD, 0.25f) : Fade(BLACK, 0.3f);
+        DrawRectangle(shopX + 25, itemY, shopWidth - 50, 40, rowColor);
+
+        std::string prefix = (i == static_cast<size_t>(m_shopIndex)) ? "> " : "  ";
+        std::string itemText = prefix + item.name + "  -  Price:  " + std::to_string(item.price) + " gold";
+        
+        DrawText(itemText.c_str(), shopX + 40, itemY + 12, 14, WHITE);
+        DrawText(item.description.c_str(), shopX + 350, itemY + 12, 14, LIGHTGRAY);
+    }
+    DrawText("Press [E] to buy item", shopX + 30, shopY + shopHeight - 35, 12, YELLOW);
 }
