@@ -3,6 +3,7 @@
 #include <raylib.h>
 #include <vector>
 #include <string>
+#include "raymath.h"
 #include "../entities/Player.h"
 #include "../dialogue/DialogueManager.h"
 
@@ -34,11 +35,13 @@ private:
     Rectangle m_collisionBox;
     Color m_color;
     bool m_isDefeated;
+    float m_speed = 1.5f;
+    bool m_isReturning = false;
 
 public:
     // Constructor
     Enemy(std::string name, int level, int hp, int attack, Vector2 pos, Rectangle box, Color col)
-        : m_name(name), m_level(level), m_health(hp), m_maxHealth(hp), m_attackPower(attack), m_position(pos), m_collisionBox(box), m_color(col), m_isDefeated(false) {}
+        : m_name(name), m_level(level), m_health(hp), m_maxHealth(hp), m_attackPower(attack), m_position(pos), m_spawnPosition(pos), m_collisionBox(box), m_color(col), m_isDefeated(false) {}
 
     // Getters
     std::string getName() const { return m_name; }
@@ -58,6 +61,46 @@ public:
     }
     void setHealth(int hp) { m_health = hp; }
     void setDefeated(bool defeated) { m_isDefeated = defeated; }
+
+    // Enemy AI logic
+    void updateAI(Vector2 playerPos) {
+        if (m_isDefeated) return;
+        
+        float distToPlayer = Vector2Distance(m_position, playerPos);
+        float distToSpawn = Vector2Distance(m_position, m_spawnPosition);
+        float agroRange = 150.0f;
+        float leashRange = 300.0f;
+
+        if (distToSpawn > leashRange) {
+            m_isReturning = true;
+        }
+        else if (distToSpawn < 10.0f && m_isReturning) {
+            m_isReturning = false;
+        }
+
+        Vector2 target;
+        if (m_isReturning) {
+            target = m_spawnPosition;
+        }
+        else if (distToPlayer < agroRange) {
+            target = playerPos;
+        }
+        else if (distToSpawn > 5.0f) {
+            target = m_spawnPosition;
+        }
+        else {
+            return;
+        }
+
+        float distToTarget = Vector2Distance(m_position, target);
+        if (distToTarget <= m_speed) {
+            m_position = target;
+        } else {
+            Vector2 direction = Vector2Normalize(Vector2Subtract(target, m_position));
+            m_position = Vector2Add(m_position, Vector2Scale(direction, m_speed));
+        }
+        
+    } 
 };
 
 

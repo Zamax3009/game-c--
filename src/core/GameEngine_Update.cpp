@@ -295,6 +295,12 @@ void GameEngine::updateRegionHubNotMap(RegionHubG* currentHub) {
     playerMovement(4.0f);
     Vector2 playerPos = m_player.getPosition();
     
+    for (auto& enemy : currentHub->enemies) {
+        if (!enemy.isDefeated()) {
+            enemy.updateAI(playerPos);
+        }
+    }
+
     if (IsKeyPressed(KEY_I)){
         m_currentState =  GameState::Inventory;
     }
