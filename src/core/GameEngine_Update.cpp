@@ -381,7 +381,6 @@ void GameEngine::updateRegionHubNotMap(RegionHubG* currentHub) {
             }
         }
     }
-
     if (IsKeyPressed(KEY_I)){
         m_currentState =  GameState::Inventory;
     }

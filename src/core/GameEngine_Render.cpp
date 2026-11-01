@@ -26,6 +26,7 @@ void GameEngine::render() {
             renderMapWindow();
         } else {
             renderMinimap();
+            renderHubControls();
         }
         
     }
@@ -609,4 +610,17 @@ void GameEngine::renderQuestLog() {
             DrawText(rewardStr.c_str(), boxX + 350, itemY + 48, 11, ORANGE);
         }
     }
+}
+
+void GameEngine::renderHubControls() {
+    float boxWidth = 600.0f;
+    float boxHeight = 35.0f;
+    float boxX = (1280.0f - boxWidth) / 2.0f;
+    float boxY = 720.0f - 45.0f;
+
+    DrawRectangle(boxX, boxY, boxWidth, boxHeight, Fade(BLACK, 0.3f));
+    DrawRectangleLinesEx({boxX, boxY, boxWidth, boxHeight}, 1, DARKGRAY);
+
+    std::string conrtolsText = "[WASD] Move | [E] Collect | [F] Interact | [I] Inventory | [J] Quests | [Q] Map | [F5] Save";
+    DrawText(conrtolsText.c_str(), boxX + 15, boxY + 11, 12, WHITE);
 }

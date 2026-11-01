@@ -181,7 +181,7 @@ void GameEngine::loadGame(const std::string& filename) {
         }
         sqlite3_finalize(stmt);
     }
-
+    
     m_currentState = GameState::RegionHub;
     sqlite3_close(db);
     TraceLog(LOG_INFO, "Game loaded successfully from SQLite with all variables!");
@@ -205,6 +205,8 @@ void GameEngine::completeQuest(Quest& quest) {
 
     showNotification("Quest completed: " + quest.title + "!");
 }
+
+
 
 Item GameEngine::createItem(ItemID id, int quantity) {
     switch (id)
@@ -457,6 +459,5 @@ int GameEngine::getSelectedAttack() {
 
     return -1;
 }
-
 DialogueManager::DialogueManager() {}
 

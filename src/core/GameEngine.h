@@ -317,6 +317,7 @@ private:
     void renderNotification();
     void renderQuestLog();
     void playerMovement(float velocity);
+    void renderHubControls();
     void updateCamera(const RegionHubG* currentHub);
     void updateRegionHubNotMap(RegionHubG* currentHub);
     
