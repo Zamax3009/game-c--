@@ -186,6 +186,8 @@ CMakeFiles/MyElementalRPG.dir/src/core/GameEngine.cpp.obj: \
  C:/msys64/ucrt64/include/sec_api/string_s.h \
  C:/msys64/ucrt64/include/assert.h \
  C:\Users\szamb\Documents\Andrea\game\ c++\src\core\WorldMapState.h \
+ C:\Users\szamb\Documents\Andrea\game\ c++\src\core\PauseState.h \
+ C:\Users\szamb\Documents\Andrea\game\ c++\src\core\OptionsState.h \
  C:/Users/szamb/DOCUME~1/Andrea/GAMEC_~1/external/rlImGui/rlImGui.h \
  C:/Users/szamb/DOCUME~1/Andrea/GAMEC_~1/external/rlImGui/extras/IconsFontAwesome6.h \
  C:/msys64/ucrt64/include/c++/15.2.0/fstream \

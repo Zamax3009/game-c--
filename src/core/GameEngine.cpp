@@ -1,6 +1,8 @@
 #include "MainMenuState.h"
 #include "RegionHubState.h"
 #include "GameEngine.h"
+#include "PauseState.h"
+#include "OptionsState.h"
 #include "raylib.h"
 #include "imgui.h"
 #include "rlImGui.h"
@@ -16,6 +18,8 @@ void GameEngine::goToShop() { changeState(std::make_unique<ShopState>()); }
 void GameEngine::goToQuestLog() { changeState(std::make_unique<QuestLogState>()); }
 void GameEngine::goToDialogue() { changeState(std::make_unique<DialogueState>()); }
 void GameEngine::goToMainMenu() { changeState(std::make_unique<MainMenuState>()); }
+void GameEngine::goToPause() { changeState(std::make_unique<PauseState>()); }
+void GameEngine::goToOptions() { changeState(std::make_unique<OptionsState>()); }
 
 bool GameEngine::doesSaveFileExist(const std::string& filename) {
     std::ifstream file(filename);
@@ -244,6 +248,7 @@ Item GameEngine::createItem(ItemID id, int quantity) {
 
 GameEngine::GameEngine() {
     InitWindow(1280, 720, "Realms of Elementa - Engine");
+    SetExitKey(KEY_NULL);
     InitAudioDevice();
     SetTargetFPS(60);
     rlImGuiSetup(true);

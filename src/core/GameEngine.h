@@ -287,6 +287,8 @@ public:
     friend class QuestLogState;
     friend class DialogueState;
     friend class MainMenuState;
+    friend class PauseState;
+    friend class OptionsState;
 
 private:
     void update();
@@ -339,6 +341,8 @@ private:
     void goToQuestLog();
     void goToDialogue();
     void goToMainMenu();
+    void goToPause();
+    void goToOptions();
 
     Player m_player;
     DialogueManager m_dialogueManager;

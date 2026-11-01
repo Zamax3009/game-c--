@@ -41,6 +41,11 @@ public:
             engine.m_isMapWindowOpen = !engine.m_isMapWindowOpen;
         }
 
+        if (IsKeyPressed(KEY_ESCAPE)) {
+            engine.goToPause();
+            return;
+        }
+
         if (!engine.m_isMapWindowOpen) {
             updateActiveHub(engine, currentHub);
         } else {
