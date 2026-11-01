@@ -1,22 +1,14 @@
 #ifndef GAME_ENGINE_H
 #define GAME_ENGINE_H
+
 #include <raylib.h>
 #include <vector>
 #include <string>
+#include <memory>
 #include "raymath.h"
+#include "GameState.h"
 #include "../entities/Player.h"
 #include "../dialogue/DialogueManager.h"
-
-enum class GameState {
-    MainMenu,
-    WorldMap,
-    RegionHub,
-    Dialogue,
-    Inventory,
-    Combat,
-    Shop,
-    QuestLog,
-};
 
 enum class QuestID {
     None = 0,
@@ -33,7 +25,6 @@ enum class CombatPhase {
 struct WallCollider {
     Rectangle bounds;
 };
-
 
 class Enemy {
 private:
@@ -159,8 +150,6 @@ public:
     }
 };
 
-
-
 class WorldItem {
 private:
     ItemID m_id;
@@ -174,9 +163,8 @@ private:
     bool m_isCollected = false;
 public:
     WorldItem(ItemID id, std::string name, std::string desc, int qty, Vector2 pos, Realm realm, ItemType type, int attr, bool collected = false)
-        : m_id(id), m_name(name),m_description(desc), m_quantity(qty), m_position(pos), m_realm(realm), m_type(type), m_attribute(attr), m_isCollected(collected) {}
+        : m_id(id), m_name(name), m_description(desc), m_quantity(qty), m_position(pos), m_realm(realm), m_type(type), m_attribute(attr), m_isCollected(collected) {}
     
-    //GGETTERS
     ItemID getID() const { return m_id; }
     std::string getName() const { return m_name; }
     std::string getDescription() const { return m_description; }
@@ -187,7 +175,6 @@ public:
     int getAttribute() const { return m_attribute; }
     bool isCollected() const { return m_isCollected; }
 
-    //SETTERS
     void setCollected(bool collected) { m_isCollected = collected; }
 };
 
@@ -209,9 +196,7 @@ struct Buildings {
         float wallThickness = 2.0f;
 
         walls.push_back({{ building.x, building.y, building.width, wallThickness }});
-
         walls.push_back({{ building.x, building.y, wallThickness, building.height }});
-
         walls.push_back({{ building.x + building.width - wallThickness, building.y, wallThickness, building.height }});
 
         float leftWidth = entrance.x - building.x;
@@ -294,35 +279,23 @@ public:
 
     void run();
 
+    friend class RegionHubState;
+    friend class WorldMapState;
+    friend class InventoryState;
+    friend class CombatState;
+    friend class ShopState;
+    friend class QuestLogState;
+    friend class DialogueState;
+    friend class MainMenuState;
+
 private:
     void update();
-    void updateMainMenu();
-    void updateWorldMap();
-    void updateRegionHub();
-    void updateDialogue();
-    void updateCombat();
-    void updateInventory();
-    void updateShop();
-    void updateQuestLog();
     void render();
-    void renderShop();
-    void renderMainMenu();
-    void renderInventory();
-    void renderMap();
-    void renderMapWindow();
-    void renderRegion();
-    void renderUI();
-    void renderMinimap();
-    void renderCombat();
-    void renderNotification();
-    void renderQuestLog();
-    void playerMovement(float velocity);
-    void renderHubControls();
-    void updateCamera(const RegionHubG* currentHub);
-    void updateRegionHubNotMap(RegionHubG* currentHub);
     
     int getSelectedAttack();
     bool checkWallCollision(const Rectangle& rec);
+    void playerMovement(float velocity);
+    void updateCamera(const RegionHubG* currentHub);
     Item createItem(ItemID id, int quantity = 1);
 
     // FILE SAVE
@@ -342,9 +315,33 @@ private:
         m_notificationTime = duration;
     }
 
+    void renderNotification();
+
+    // State Pattern
+    std::unique_ptr<GameState> m_currentStatePtr;
+    
+    void changeState(std::unique_ptr<GameState> newState) {
+        if (m_currentStatePtr) {
+            m_currentStatePtr->exit(*this);
+        }
+        m_currentStatePtr = std::move(newState);
+        if (m_currentStatePtr) {
+            m_currentStatePtr->enter(*this);
+        }
+    }
+
+
+    void goToRegionHub();
+    void goToWorldMap();
+    void goToInventory();
+    void goToCombat();
+    void goToShop();
+    void goToQuestLog();
+    void goToDialogue();
+    void goToMainMenu();
+
     Player m_player;
     DialogueManager m_dialogueManager;
-    GameState m_currentState;
     CombatPhase m_currentPhase = CombatPhase::ActionSelect;
     std::vector<NPCInfo> m_npcs;
     std::vector<RegionMap> m_regions;

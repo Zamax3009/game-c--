@@ -1,3 +1,5 @@
+#include "MainMenuState.h"
+#include "RegionHubState.h"
 #include "GameEngine.h"
 #include "raylib.h"
 #include "imgui.h"
@@ -5,6 +7,15 @@
 #include "fstream"
 #include "sstream"
 #include "sqlite3.h"
+
+void GameEngine::goToRegionHub() { changeState(std::make_unique<RegionHubState>()); }
+void GameEngine::goToWorldMap() { changeState(std::make_unique<WorldMapState>()); }
+void GameEngine::goToInventory() { changeState(std::make_unique<InventoryState>()); }
+void GameEngine::goToCombat() { changeState(std::make_unique<CombatState>()); }
+void GameEngine::goToShop() { changeState(std::make_unique<ShopState>()); }
+void GameEngine::goToQuestLog() { changeState(std::make_unique<QuestLogState>()); }
+void GameEngine::goToDialogue() { changeState(std::make_unique<DialogueState>()); }
+void GameEngine::goToMainMenu() { changeState(std::make_unique<MainMenuState>()); }
 
 bool GameEngine::doesSaveFileExist(const std::string& filename) {
     std::ifstream file(filename);
@@ -29,7 +40,6 @@ void GameEngine::saveGame(const std::string& filename) {
     
     sqlite3_exec(db, createPlayerTable.c_str(), nullptr, nullptr, &errMsg);
     sqlite3_exec(db, "DELETE FROM player;", nullptr, nullptr, &errMsg);
-
     Vector2 playerPos = m_player.getPosition();
     std::string insertPlayer = "INSERT INTO player VALUES (" +
         std::to_string(m_player.getHP()) + ", " +
@@ -182,7 +192,7 @@ void GameEngine::loadGame(const std::string& filename) {
         sqlite3_finalize(stmt);
     }
     
-    m_currentState = GameState::RegionHub;
+    goToRegionHub();
     sqlite3_close(db);
     TraceLog(LOG_INFO, "Game loaded successfully from SQLite with all variables!");
 }
@@ -242,7 +252,7 @@ GameEngine::GameEngine() {
     
     m_aquaSound = LoadMusicStream("assets/Aqua_Main_Theme.mp3");
     m_ignisSound = LoadMusicStream("assets/Ignis_Main_Theme.mp3");
-    m_currentState = GameState::MainMenu;
+    goToMainMenu();
 
     m_camera.offset = { 1280.0f / 2.0f, 720.0f / 2.0f };
     m_camera.rotation = 0.0f;
@@ -405,7 +415,6 @@ bool GameEngine::checkWallCollision(const Rectangle& rec) {
     }
     return false;
 }
-
 void GameEngine::playerMovement(float velocity) {
     Vector2 playerPos = m_player.getPosition();
     Vector2 movement = { 0.0f, 0.0f };
@@ -418,26 +427,14 @@ void GameEngine::playerMovement(float velocity) {
     float boxWidth = 10.0f;
     float boxHeight = 15.0f;
 
-    Rectangle nextRectX = {
-        playerPos.x + (movement.x * velocity),
-        playerPos.y,
-        boxWidth,
-        boxHeight
-    };
-
+    Rectangle nextRectX = { playerPos.x + (movement.x * velocity), playerPos.y, boxWidth, boxHeight };
     if (movement.x != 0.0f && !checkWallCollision(nextRectX)) {
-        m_player.move({ movement.x * velocity, 0.0f});
+        m_player.move({ movement.x * velocity, 0.0f });
     }
 
-    Rectangle nextRectY = {
-        playerPos.x,
-        playerPos.y + (movement.y * velocity),
-        boxWidth,
-        boxHeight
-    };
-
+    Rectangle nextRectY = { playerPos.x, playerPos.y + (movement.y * velocity), boxWidth, boxHeight };
     if (movement.y != 0.0f && !checkWallCollision(nextRectY)) {
-        m_player.move({0.0f, movement.y * velocity});
+        m_player.move({ 0.0f, movement.y * velocity });
     }
 }
 
