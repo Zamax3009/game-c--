@@ -4,6 +4,7 @@
 #include "rlImGui.h"
 #include "fstream"
 #include "sstream"
+#include "sqlite3.h"
 
 bool GameEngine::doesSaveFileExist(const std::string& filename) {
     std::ifstream file(filename);
@@ -11,115 +12,173 @@ bool GameEngine::doesSaveFileExist(const std::string& filename) {
 }
 
 void GameEngine::saveGame(const std::string& filename) {
-    std::ofstream outFile(filename);
-    if (!outFile.is_open()) return;
+    sqlite3* db;
+    char* errMsg = nullptr;
 
-    outFile << m_player.getHP() << "\n";
-    outFile << m_player.getMaxHP() << "\n";
-    outFile << m_player.getGold() << "\n";
+    if (sqlite3_open(filename.c_str(), &db) != SQLITE_OK) {
+        TraceLog(LOG_ERROR, "Can't open database: %s", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return;
+    }
     
+    sqlite3_exec(db, "BEGIN TRANSACTION;", nullptr, nullptr, &errMsg);
+
+    std::string createPlayerTable = "CREATE TABLE IF NOT EXISTS player (hp REAL, max_hp INTEGER, gold INTEGER, x REAL, y REAL, realm INTEGER, level INTEGER, xp INTEGER);";
+    if (sqlite3_exec(db, createPlayerTable.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
+        TraceLog(LOG_ERROR, "SQL Error (Player Table): %s", errMsg);
+        sqlite3_free(errMsg);
+    }
+    sqlite3_exec(db, "DELETE FROM player;", nullptr, nullptr, &errMsg);
+
     Vector2 playerPos = m_player.getPosition();
-    outFile << playerPos.x << " " << playerPos.y << "\n";
-    outFile << static_cast<int>(m_selectRealm) << "\n";
-
-    outFile << m_inventory.size() << "\n";
+    std::string insertPlayer = "INSERT INTO player VALUES (" +
+        std::to_string(m_player.getHP()) + ", " +
+        std::to_string(m_player.getMaxHP()) + ", " +
+        std::to_string(m_player.getGold()) + ", " +
+        std::to_string(playerPos.x) + ", " +
+        std::to_string(playerPos.y) + ", " +
+        std::to_string(static_cast<int>(m_selectRealm)) + ", " +
+        std::to_string(m_player.getLevel()) + ", " +
+        std::to_string(m_player.getXP()) + ");";
+    sqlite3_exec(db, insertPlayer.c_str(), nullptr, nullptr, &errMsg);
+    
+    sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS inventory (item_id INTEGER, quantity INTEGER);", nullptr, nullptr, &errMsg);
+    sqlite3_exec(db, "DELETE FROM inventory;", nullptr, nullptr, &errMsg);
     for (const auto& item : m_inventory.getItems()) {
-        outFile << static_cast<int>(item.id) << "|" << item.quantity << "\n";
+        std::string insertInv = "INSERT INTO inventory VALUES (" + std::to_string(static_cast<int>(item.id)) + ", " + std::to_string(item.quantity) + ");";
+        sqlite3_exec(db, insertInv.c_str(), nullptr, nullptr, &errMsg);
     }
 
-    outFile << m_worldItems.size() << "\n";
-    for (const auto& wItem : m_worldItems) {
-        outFile << (wItem.isCollected() ? 1 : 0) << "\n";
+    sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS world_items (item_index INTEGER, is_collected INTEGER);", nullptr, nullptr, &errMsg);
+    sqlite3_exec(db, "DELETE FROM world_items;", nullptr, nullptr, &errMsg);
+    for (size_t i = 0; i < m_worldItems.size(); i++) {
+        std::string insertWI = "INSERT INTO world_items VALUES (" + std::to_string(i) + ", " + (m_worldItems[i].isCollected() ? "1" : "0") + ");";
+        sqlite3_exec(db, insertWI.c_str(), nullptr, nullptr, &errMsg);
     }
 
-    outFile << m_regionHub.size() << "\n";
-    for (const auto& hub : m_regionHub) {
-        outFile << hub.enemies.size() << "\n";
-        for (const auto& enemy : hub.enemies) {
-            outFile << (enemy.isDefeated() ? 1 : 0) << "\n";
+    sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS enemies (hub_index INTEGER, enemy_index INTEGER, is_defeated INTEGER);", nullptr, nullptr, &errMsg);
+    sqlite3_exec(db, "DELETE FROM enemies;", nullptr, nullptr, &errMsg);
+    for (size_t h = 0; h < m_regionHub.size(); h++) {
+        for (size_t e = 0; e < m_regionHub[h].enemies.size(); e++) {
+            std::string insertEnemy = "INSERT INTO enemies VALUES (" + std::to_string(h) + ", " + std::to_string(e) + ", " + (m_regionHub[h].enemies[e].isDefeated() ? "1" : "0") + ");";
+            sqlite3_exec(db, insertEnemy.c_str(), nullptr, nullptr, &errMsg);
         }
     }
 
-    outFile.close();
+    sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS quests (quest_id INTEGER, is_accepted INTEGER, is_completed INTEGER, current_progress INTEGER);", nullptr, nullptr, &errMsg);
+    sqlite3_exec(db, "DELETE FROM quests;", nullptr, nullptr, &errMsg);
+    for (const auto& quest : m_quests) {
+        std::string insertQuest = "INSERT INTO quests VALUES (" + 
+            std::to_string(static_cast<int>(quest.id)) + ", " + 
+            (quest.isAccepted ? "1" : "0") + ", " + 
+            (quest.isCompleted ? "1" : "0") + ", " + 
+            std::to_string(quest.currentProgress) + ");";
+        sqlite3_exec(db, insertQuest.c_str(), nullptr, nullptr, &errMsg);
+    }
+
+    sqlite3_exec(db, "END TRANSACTION;", nullptr, nullptr, &errMsg);
+    sqlite3_close(db);
     TraceLog(LOG_INFO, "Game saved successfully.");
 }
-
 void GameEngine::loadGame(const std::string& filename) {
-    std::ifstream inFile(filename);
-    if (!inFile.is_open()) {
-        TraceLog(LOG_WARNING, "Save file not found.");
+    sqlite3* db;
+    sqlite3_stmt* stmt;
+
+    if (sqlite3_open(filename.c_str(), &db) != SQLITE_OK) {
+        TraceLog(LOG_WARNING, "Save database not found or cannot be opened.");
+        sqlite3_close(db);
         return;
     }
 
-    std::string line;
-
-    auto readLineAsFloat = [&inFile]() -> float {
-        std::string l;
-        if (std::getline(inFile, l)) {
-            try { return std::stof(l); } catch (...) { return 0.0f; }
-        }
-        return 0.0f;
-    };
-
-    auto readLineAsInt = [&inFile]() -> int {
-        std::string l;
-        if (std::getline(inFile, l)) {
-            try { return std::stoi(l); } catch (...) { return 0; }
-        }
-        return 0;
-    };
-
-    float hp = readLineAsFloat();
-    int maxHp = readLineAsFloat();
-    int gold = readLineAsInt();
-
-    m_player.setHP(hp);
-    m_player.setMaxHp(maxHp);
-    m_player.setGold(gold);
-    if (std::getline(inFile, line)) {
-        std::stringstream ss(line);
-        float posX, posY;
-        if (ss >> posX >> posY) {
+    if (sqlite3_prepare_v2(db, "SELECT hp, max_hp, gold, x, y, realm, level, xp FROM player;", -1, &stmt, nullptr) == SQLITE_OK) {
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            m_player.setHP(static_cast<float>(sqlite3_column_double(stmt, 0)));
+            m_player.setMaxHp(sqlite3_column_int(stmt, 1));
+            m_player.setGold(sqlite3_column_int(stmt, 2));
+            float posX = static_cast<float>(sqlite3_column_double(stmt, 3));
+            float posY = static_cast<float>(sqlite3_column_double(stmt, 4));
             m_player.setPosition({posX, posY});
+            m_selectRealm = static_cast<Realm>(sqlite3_column_int(stmt, 5));
+            m_player.setLevel(sqlite3_column_int(stmt, 6));
+            m_player.setXP(sqlite3_column_int(stmt, 7));
         }
+        sqlite3_finalize(stmt);
     }
-    int realmInt = readLineAsInt();
-    m_selectRealm = static_cast<Realm>(realmInt);
 
-    int invSize = readLineAsInt();
     m_inventory.clear();
-    for (int i = 0; i < invSize; ++i) {
-        if (!std::getline(inFile, line)) break;
-
-        std::stringstream ss(line);
-        std::string idStr, qtyStr;
-        if (std::getline(ss, idStr, '|') && std::getline(ss, qtyStr, '|')) {
-            ItemID id = static_cast<ItemID>(std::stoi(idStr));
-            int quantity = std::stoi(qtyStr);
-
-            Item loadedItem = createItem(id, quantity);
-            m_inventory.addItem(loadedItem);
+    if (sqlite3_prepare_v2(db, "SELECT item_id, quantity FROM inventory;", -1, &stmt, nullptr) == SQLITE_OK) {
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            ItemID id = static_cast<ItemID>(sqlite3_column_int(stmt, 0));
+            int qty = sqlite3_column_int(stmt, 1);
+            m_inventory.addItem(createItem(id, qty));
         }
     }
+    sqlite3_finalize(stmt);
 
-    int worldItemsSize = readLineAsInt();
-    for (int i = 0; i < worldItemsSize && i < m_worldItems.size(); i++) {
-        int collectFlag = readLineAsInt();
-        m_worldItems[i].setCollected(collectFlag == 1);
-    }
-
-    int hubSize = readLineAsInt();
-    for (int h = 0; h < hubSize && h < m_regionHub.size(); h++) {
-        int enemySize = readLineAsInt();
-        for (int e = 0; e < enemySize && e < m_regionHub[h].enemies.size(); e++) {
-            int defeatedFlag = readLineAsInt();
-            m_regionHub[h].enemies[e].setDefeated(defeatedFlag == 1);
+    if (sqlite3_prepare_v2(db, "SELECT item_index, is_collected FROM world_items;", -1, &stmt, nullptr) == SQLITE_OK) {
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            int index = sqlite3_column_int(stmt, 0);
+            int collected = sqlite3_column_int(stmt, 1);
+            if (index >= 0 && index < m_worldItems.size()) {
+                m_worldItems[index].setCollected(collected == 1);
+            }
         }
     }
+    sqlite3_finalize(stmt);
+
+    if (sqlite3_prepare_v2(db, "SELECT hub_index, enemy_index, is_defeated FROM enemies;", -1, &stmt, nullptr) == SQLITE_OK) {
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            int h = sqlite3_column_int(stmt, 0);
+            int e = sqlite3_column_int(stmt, 1);
+            int defeated = sqlite3_column_int(stmt, 2);
+            if (h < m_regionHub.size() && e < m_regionHub[h].enemies.size()) {
+                m_regionHub[h].enemies[e].setDefeated(defeated == 1);
+            }
+        }
+    }
+    sqlite3_finalize(stmt);
+
+    if (sqlite3_prepare_v2(db, "SELECT quest_id, is_accepted, is_completed, current_progress FROM quests;", -1, &stmt, nullptr) == SQLITE_OK) {
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            int qIdInt = sqlite3_column_int(stmt, 0);
+            int accepted = sqlite3_column_int(stmt, 1);
+            int completed = sqlite3_column_int(stmt, 2);
+            int progress = sqlite3_column_int(stmt, 3);
+
+            QuestID qId = static_cast<QuestID>(qIdInt);
+            for (auto& quest : m_quests) {
+                if (quest.id == qId) {
+                    quest.isAccepted = (accepted == 1);
+                    quest.isCompleted = (completed == 1);
+                    quest.currentProgress = progress;
+                }
+            }
+        }
+    }
+    sqlite3_finalize(stmt);
 
     m_currentState = GameState::RegionHub;
-    inFile.close();
+    sqlite3_close(db);
     TraceLog(LOG_INFO, "Game loaded successfully!");
+}
+
+void GameEngine::acceptQuest(QuestID id) {
+    for (auto& quest : m_quests) {
+        if (quest.id == id && !quest.isAccepted) {
+            quest.isAccepted = true;
+            TraceLog(LOG_INFO, "Quest accepted via dialogue!");
+        }
+    }
+}
+
+void GameEngine::completeQuest(Quest& quest) {
+    if (quest.isCompleted) return;
+    quest.isCompleted = true;
+
+    m_player.addGold(quest.rewardGold);
+    m_player.addXP(quest.rewardXP);
+
+    showNotification("Quest completed: " + quest.title + "!");
 }
 
 Item GameEngine::createItem(ItemID id, int quantity) {
@@ -138,7 +197,7 @@ Item GameEngine::createItem(ItemID id, int quantity) {
         break;
 
     case ItemID::ElementalCrystal:
-        return {ItemID::ElementalCrystal, "Elemental Cristal", "Emits a dimm blue light.", quantity, ItemType::None, 0};
+        return {ItemID::ElementalCrystal, "Elemental Crystal", "Emits a dimm blue light.", quantity, ItemType::None, 0};
         break;
     default:
         return {ItemID::None, "Unknown", "Unknown item, don't touch", 0, ItemType::None, 0};
@@ -239,19 +298,24 @@ GameEngine::GameEngine() {
         {ItemID::ManaPotion, "Mana Potion", "Restores a small amount of mana.", 0, ItemType::RestoreMana, 35},
         {ItemID::HealthElixir, "Health Elixir", "Heals a small amount of demege.", 0, ItemType::Heal, 35},
         {ItemID::AncientScroll, "Ancent Scroll", "Contains unreadable runes.", 0, ItemType::None, 0},
-        {ItemID::ElementalCrystal, "Elemental Cristal", "Emits a dimm blue light.", 0, ItemType::None, 0}
+        {ItemID::ElementalCrystal, "Elemental Crystal", "Emits a dimm blue light.", 0, ItemType::None, 0}
     };
 
     m_worldItems = {
         {ItemID::ManaPotion, "Mana Potion", "Restores a small amount of mana.", 1, {250.0f, 300.0f}, Realm::Aer, ItemType::RestoreMana, 35, false},
         {ItemID::HealthElixir, "Health Elixir", "Heals a small amount of demege.", 1, {850.0f, 350.0f}, Realm::Aer, ItemType::Heal, 35, false},
         {ItemID::AncientScroll, "Ancent Scroll", "Contains unreadable runes.", 2, {850.0f, 350.0f}, Realm::Aqua, ItemType::None, 0, false},
-        {ItemID::ElementalCrystal, "Elemental Cristal", "Emits a dimm blue light.", 1, {600.0f, 500.0f}, Realm::Aqua, ItemType::None, 0, false}
+        {ItemID::ElementalCrystal, "Elemental Crystal", "Emits a dimm blue light.", 1, {600.0f, 500.0f}, Realm::Aqua, ItemType::None, 0, false}
     };
 
     m_shopItems = {
         {ItemID::ManaPotion, "Mana Potion", "Restores a small amount of mana.", 20, ItemType::RestoreMana, 35},
         {ItemID::HealthElixir, "Health Elixir", "Heals a small amount of demege.", 20, ItemType::Heal, 35},
+    };
+
+    m_quests = {
+        { QuestID::GoblinHunt, "Goblin Hunt", "Defeat 2 Goblins", false, false, 0, 2, 60, 150 },
+        { QuestID::CrystalGathering, "Gather Crystal", "Gather 1 Elemental Crystal in the Aqua Realm", false, false, 0, 1, 60, 150 },
     };
 
     for(auto& regionBldg : m_buildings) {

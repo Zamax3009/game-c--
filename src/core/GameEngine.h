@@ -14,7 +14,14 @@ enum class GameState {
     Dialogue,
     Inventory,
     Combat,
-    Shop
+    Shop,
+    QuestLog,
+};
+
+enum class QuestID {
+    None = 0,
+    GoblinHunt,
+    CrystalGathering
 };
 
 enum class CombatPhase {
@@ -184,6 +191,18 @@ struct RegionBuildings {
     std::vector<Buildings> buildings;
 };
 
+struct Quest {
+    QuestID id;
+    std::string title;
+    std::string description;
+    bool isAccepted = false;
+    bool isCompleted = false;
+    int currentProgress = 0;
+    int targetProgress = 1;
+    int rewardGold = 50;
+    int rewardXP = 100;
+};
+
 struct ShopItem {
     ItemID id;
     std::string name;
@@ -239,7 +258,7 @@ private:
     void updateCombat();
     void updateInventory();
     void updateShop();
-
+    void updateQuestLog();
     void render();
     void renderShop();
     void renderMainMenu();
@@ -251,6 +270,7 @@ private:
     void renderMinimap();
     void renderCombat();
     void renderNotification();
+    void renderQuestLog();
     void playerMovement(float velocity);
     void updateCamera(const RegionHubG* currentHub);
     void updateRegionHubNotMap(RegionHubG* currentHub);
@@ -264,7 +284,17 @@ private:
     void saveGame(const std::string& filename);
     void loadGame(const std::string& filename);
 
+    void acceptQuest(QuestID id);
+    void completeQuest(Quest& quest);
     
+    void showNotification(const std::string& text, float duration = 3.5f) {
+        if (m_notificationTime > 0.0f && !m_notificationText.empty()) {
+            m_notificationText += " | " + text;
+        } else {
+            m_notificationText = text;
+        }
+        m_notificationTime = duration;
+    }
 
     Player m_player;
     DialogueManager m_dialogueManager;
@@ -292,6 +322,10 @@ private:
     int m_inventoryIndex = 0;
     float m_notificationTime = 0;
     std::string m_notificationText = "";
+    bool m_isShopSelling = false;
+    std::vector<Quest> m_quests;
+    int m_questLogIndex = 0;
+    int m_lastPlayerLevel = 1;
 };
 
 #endif

@@ -1,4 +1,5 @@
 #include "DialogueManager.h"
+#include "../core/GameEngine.h"
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <iostream>
@@ -11,6 +12,12 @@ static Realm stringToRealm(const std::string& str){
     if (str == "Terra") return Realm::Terra;
     if (str == "Ignis") return Realm::Ignis;
     return Realm::Aer;
+}
+
+static QuestID stringToQuestID(const std::string& str) {
+    if (str == "GoblinHunt") return QuestID::GoblinHunt;
+    if (str == "CrystalGathering") return QuestID::CrystalGathering;
+    return QuestID::None;
 }
 
 bool DialogueManager::loadFromFile(const std::string& FilePath, const std::string& npcKey){
@@ -26,8 +33,6 @@ bool DialogueManager::loadFromFile(const std::string& FilePath, const std::strin
 
         m_nodes.clear();
 
-        const auto& npcNode = j.at(npcKey);
-
         for (const auto& item : j.at(npcKey)) {
             DialogueNode node;
             node.id = item.at("id").get<int>();
@@ -40,6 +45,13 @@ bool DialogueManager::loadFromFile(const std::string& FilePath, const std::strin
                 option.affectedRealm = stringToRealm(opt.at("affectedRealm").get<std::string>());
                 option.reputationChange = opt.at("reputationChange").get<int>();
                 option.masteryChange = opt.at("masteryChange").get<int>();
+                
+                if (opt.contains("questToAccept")) {
+                    option.questToAccept = stringToQuestID(opt.at("questToAccept").get<std::string>());
+                } else {
+                    option.questToAccept = QuestID::None;
+                }
+
                 node.options.push_back(option);
             }
             m_nodes.push_back(node);
@@ -61,16 +73,17 @@ const DialogueNode* DialogueManager::getCurrentNode() const {
     return nullptr;
 }
 
-void DialogueManager::selectOption(int optionIndex, Player& player) {
+QuestID DialogueManager::selectOption(int optionIndex, Player& player) {
     const DialogueNode* current = getCurrentNode();
     if (current == nullptr || optionIndex < 0 || optionIndex >= static_cast<int>(current->options.size())){
-        return;
+        return QuestID::None;
     };
 
-    const DialogueOption& option = current -> options[optionIndex];
+    const DialogueOption& option = current->options[optionIndex];
     player.modifyReputation(option.affectedRealm, option.reputationChange);
     player.modifyMastery(option.affectedRealm, option.masteryChange);
 
+    QuestID questToAccept = option.questToAccept;
 
     if (option.nextNodeId == -1) {
         m_active = false;
@@ -78,4 +91,6 @@ void DialogueManager::selectOption(int optionIndex, Player& player) {
     else {
         m_currentNodeId = option.nextNodeId;
     }
+
+    return questToAccept;
 }

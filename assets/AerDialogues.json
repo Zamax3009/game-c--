@@ -50,55 +50,28 @@
             ]
         }
     ],
-    "aer_wizard" : [
+    "aer_wizard": [
+    {
+      "id": 0,
+      "speaker": "Aer Wizard",
+      "text": "Goblins are invading our lands! Will you help us?",
+      "options": [
         {
-            "id" : 0,
-            "speaker" : "Wizard of Aer",
-            "text" : "Nice to meet you traveler! Are you interested in magic?",
-            "options" : [
-                {
-                    "text" : "Yes, that is the reason I came so teach me now you old man!",
-                    "nextNodeId" : 1,
-                    "affectedRealm" : "Aer",
-                    "reputationChange" : -5,
-                    "masteryChange" : 2
-                },
-                {
-                    "text" : "It's nice meeting you too, sir. I am interested to magic indeed! would you be so kind to teach me something?",
-                    "nextNodeId" : 2,
-                    "affectedRealm" : "Aer",
-                    "reputationChange" : 5,
-                    "masteryChange" : 5
-                }
-            ]
+          "text": "I accept the task!",
+          "nextNodeId": -1,
+          "affectedRealm": "Aer",
+          "reputationChange": 10,
+          "masteryChange": 5,
+          "questToAccept": "GoblinHunt"
         },
         {
-            "id" : 1,
-            "speaker" : "Wizard of Aer",
-            "text" : "I'll teach you but you better learn some good manners",
-            "options": [
-                {
-                    "text" : "I don't need no manners old man, I take what I need! I can be as rude as I want. Now quit the talk and start teaching me already!",
-                    "nextNodeId" : -1,
-                    "affectedRealm" : "Aer",
-                    "reputationChange" : -5,
-                    "masteryChange" : 0
-                }
-            ]
-        },
-        {
-            "id" : 2,
-            "speaker" : "Wizard of Aer",
-            "text" : "I sure will! Now come sit so I can start teaching",
-            "options" :[
-                {
-                    "text" : "Thank you so much sir!",
-                    "nextNodeId" : -1,
-                    "affectedRealm" : "Aer",
-                    "reputationChange" : 5,
-                    "masteryChange" : 5
-                }
-            ]
+          "text": "I wont do it now.",
+          "nextNodeId": -1,
+          "affectedRealm": "Aer",
+          "reputationChange": 0,
+          "masteryChange": 0
         }
-    ]
+      ]
+    }
+  ]
 }

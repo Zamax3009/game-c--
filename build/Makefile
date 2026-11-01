@@ -520,6 +520,30 @@ src/main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyElementalRPG.dir\build.make CMakeFiles/MyElementalRPG.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
+vendor/sqlite/sqlite3.obj: vendor/sqlite/sqlite3.c.obj
+.PHONY : vendor/sqlite/sqlite3.obj
+
+# target to build an object file
+vendor/sqlite/sqlite3.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyElementalRPG.dir\build.make CMakeFiles/MyElementalRPG.dir/vendor/sqlite/sqlite3.c.obj
+.PHONY : vendor/sqlite/sqlite3.c.obj
+
+vendor/sqlite/sqlite3.i: vendor/sqlite/sqlite3.c.i
+.PHONY : vendor/sqlite/sqlite3.i
+
+# target to preprocess a source file
+vendor/sqlite/sqlite3.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyElementalRPG.dir\build.make CMakeFiles/MyElementalRPG.dir/vendor/sqlite/sqlite3.c.i
+.PHONY : vendor/sqlite/sqlite3.c.i
+
+vendor/sqlite/sqlite3.s: vendor/sqlite/sqlite3.c.s
+.PHONY : vendor/sqlite/sqlite3.s
+
+# target to generate assembly for a file
+vendor/sqlite/sqlite3.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyElementalRPG.dir\build.make CMakeFiles/MyElementalRPG.dir/vendor/sqlite/sqlite3.c.s
+.PHONY : vendor/sqlite/sqlite3.c.s
+
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -574,6 +598,9 @@ help:
 	@echo ... src/main.obj
 	@echo ... src/main.i
 	@echo ... src/main.s
+	@echo ... vendor/sqlite/sqlite3.obj
+	@echo ... vendor/sqlite/sqlite3.i
+	@echo ... vendor/sqlite/sqlite3.s
 .PHONY : help
 
 

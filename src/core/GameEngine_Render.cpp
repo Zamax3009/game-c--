@@ -41,6 +41,14 @@ void GameEngine::render() {
     else if (m_currentState == GameState::Shop) {
         renderShop();
     }
+    else if (m_currentState == GameState::QuestLog) {
+        renderQuestLog();
+    }
+
+    if (m_notificationTime > 0.0f) {
+        renderNotification();
+    }
+
     rlImGuiEnd();
     EndDrawing();
 }
@@ -132,6 +140,7 @@ void GameEngine::renderCombat() {
         }
 
         DrawText("Press [R] to Run", arenaX + 430, arenaY + 300, 16, YELLOW);
+        DrawText("Press [H] to use Health Potion", arenaX + 430, arenaY + 330, 16, GREEN);
     }
     else if (m_currentPhase == CombatPhase::Victory) {
         DrawRectangle(arenaX + 50, arenaY + 120, 600, 130, Fade(DARKGREEN, 0.9f));
@@ -472,7 +481,6 @@ void GameEngine::renderRegion() {
 }
 
 void GameEngine::renderUI() {
-    //Dialogue
     const DialogueNode* node = m_dialogueManager.getCurrentNode();
     if (node) {
         ImGui::Begin("Dialogue", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
@@ -482,7 +490,10 @@ void GameEngine::renderUI() {
 
         for (size_t i = 0; i < node->options.size(); i++) {
             if (ImGui::Button(node->options[i].text.c_str())) {
-                m_dialogueManager.selectOption(static_cast<int>(i), m_player);
+                QuestID qId = m_dialogueManager.selectOption(static_cast<int>(i), m_player);
+                if (qId != QuestID::None) {
+                    acceptQuest(qId);
+                }
             }
         }
         ImGui::End();
@@ -490,14 +501,19 @@ void GameEngine::renderUI() {
 }
 
 void GameEngine::renderNotification() {
-    int boxWidth = 200;
-    int boxHeight = 40;
+    int fontSize = 16;
+    int textWidth = MeasureText(m_notificationText.c_str(), fontSize);
+
+    int paddingX = 30;
+    int boxWidth = textWidth + (paddingX * 2);
+    int boxHeight = 45;
+
     int boxX = (1280 - boxWidth) / 2;
-    int boxY = 30;
+    int boxY = 25;
 
     DrawRectangle(boxX, boxY, boxWidth, boxHeight, Fade(BLACK, 0.8f));
-    DrawRectangleLines(boxX, boxY, boxWidth, boxHeight, GOLD);
-    DrawText(m_notificationText.c_str(), boxX + 45, boxY + 12, 14, GOLD);
+    DrawRectangleLinesEx({ (float)boxX, (float)boxY, (float)boxWidth, (float)boxHeight }, 2, GOLD);
+    DrawText(m_notificationText.c_str(), boxX + paddingX, boxY + (boxHeight - fontSize) / 2, 14, GOLD);
 }
 
 void GameEngine::renderShop() {
@@ -510,25 +526,92 @@ void GameEngine::renderShop() {
 
     DrawRectangle(shopX, shopY, shopWidth, shopHeight, DARKGRAY);
     DrawRectangleLines(shopX, shopY, shopWidth, shopHeight, GOLD);
-    DrawText("MERCHANT SHOP", shopX + 30, shopY + 25, 22, GOLD);
+
+    std::string title = !m_isShopSelling ? "MERCHANT SHOP - BUY ITEMS" : "MERCHANT SHOP - SELL ITEMS";
+    DrawText(title.c_str(), shopX + 30, shopY + 25, 22, GOLD);
 
     std::string goldText = "Gold: " + std::to_string(m_player.getGold()) + " coins";
     DrawText(goldText.c_str(), shopX + shopWidth - 180, shopY + 28, 16, YELLOW);
-    DrawText("Press [I] to exit", shopX + 30, shopY + 55, 12, LIGHTGRAY);
+    DrawText("Press [TAB] or [V] to switch Buy-Sell | [I] to exit", shopX + 30, shopY + 55, 12, LIGHTGRAY);
 
     float startY = shopY + 100.0f;
-    for (size_t i = 0; i < m_shopItems.size(); i++) {
-        const auto& item = m_shopItems[i];
-        float itemY = startY + (i * 50.0f);
+    if (!m_isShopSelling) {
+        for (size_t i = 0; i < m_shopItems.size(); i++) {
+            const auto& item = m_shopItems[i];
+            float itemY = startY + (i * 50.0f);
 
-        Color rowColor = (i == static_cast<size_t>(m_shopIndex)) ? Fade(GOLD, 0.25f) : Fade(BLACK, 0.3f);
-        DrawRectangle(shopX + 25, itemY, shopWidth - 50, 40, rowColor);
+            Color rowColor = (i == static_cast<size_t>(m_shopIndex)) ? Fade(GOLD, 0.25f) : Fade(BLACK, 0.3f);
+            DrawRectangle(shopX + 25, itemY, shopWidth - 50, 40, rowColor);
 
-        std::string prefix = (i == static_cast<size_t>(m_shopIndex)) ? "> " : "  ";
-        std::string itemText = prefix + item.name + "  -  Price:  " + std::to_string(item.price) + " gold";
-        
-        DrawText(itemText.c_str(), shopX + 40, itemY + 12, 14, WHITE);
-        DrawText(item.description.c_str(), shopX + 350, itemY + 12, 14, LIGHTGRAY);
+            std::string prefix = (i == static_cast<size_t>(m_shopIndex)) ? "> " : "  ";
+            std::string itemText = prefix + item.name + "  -  Price:  " + std::to_string(item.price) + " gold";
+            
+            DrawText(itemText.c_str(), shopX + 40, itemY + 12, 14, WHITE);
+            DrawText(item.description.c_str(), shopX + 350, itemY + 12, 14, LIGHTGRAY);
+        }
+        DrawText("Press [E] or [ENTER] to buy item", shopX + 30, shopY + shopHeight - 35, 12, YELLOW);
+    } else {
+        if (m_inventory.isEmpty()) {
+            DrawText("You have nothing to sell", shopX + 40, startY, 16, WHITE);
+        } else {
+            for (size_t i = 0; i < m_inventory.size(); i++) {
+                const auto& item = m_inventory[i];
+                float itemY = startY + (i * 50);
+
+                Color rowColor = (i == static_cast<size_t>(m_shopIndex)) ? Fade(YELLOW, 0.25f) : Fade(BLACK, 0.3f);
+                DrawRectangle(shopX + 25, itemY, shopWidth - 50, 40, rowColor);
+
+                std::string prefix = (i == static_cast<size_t>(m_shopIndex)) ? "> " : "  ";
+                std::string itemText = prefix + item.name + " (x" + std::to_string(item.quantity) + ") - Sell";
+
+                DrawText(itemText.c_str(), shopX + 40, itemY + 12, 14, WHITE);
+                DrawText(item.description.c_str(), shopX + 350, itemY + 12, 14, LIGHTGRAY);
+            }
+            DrawText("Press [E] or [ENTER] to sell item", shopX + 30, shopY + shopHeight - 35, 12, YELLOW);
+        }
     }
-    DrawText("Press [E] to buy item", shopX + 30, shopY + shopHeight - 35, 12, YELLOW);
+    
+    
+}
+void GameEngine::renderQuestLog() {
+    DrawRectangle(0, 0, 1280, 720, Fade(BLACK, 0.75));
+
+    float boxWidth = 700.0f;
+    float boxHeight = 450.0f;
+    float boxX = (1280.0f - boxWidth) / 2.0f;
+    float boxY = (720.0f - boxHeight) / 2.0f;
+
+    DrawRectangle(boxX, boxY, boxWidth, boxHeight, DARKGRAY);
+    DrawRectangleLines(boxX, boxY, boxWidth, boxHeight, GOLD);
+
+    DrawText("QUEST DIARY", boxX + 30, boxY + 25, 22, GOLD);
+    DrawText("Press [J] or [I] to exit", boxX + 30, boxY + 55, 12, LIGHTGRAY);
+
+    float startY = boxY + 100.0f;
+
+    if (m_quests.empty()) {
+        DrawText("No active quests in your diary.", boxX + 40, startY, 16, WHITE);
+    } else {
+        for (size_t i = 0; i < m_quests.size(); i++) {
+            const auto& quest = m_quests[i];
+            float itemY = startY + (i * 80.0f);
+
+            Color rowColor = (i == static_cast<size_t>(m_questLogIndex)) ? Fade(GOLD, 0.2f) : Fade(BLACK, 0.3f);
+            DrawRectangle(boxX + 25, itemY, boxWidth - 50, 70, rowColor);
+
+            std::string prefix = (i == static_cast<size_t>(m_questLogIndex)) ? "> " : "  ";
+            std::string statusText = quest.isCompleted ? "[COMPLETED]" : (quest.isAccepted ? "[IN PROGRESS]" : "[NOT STARTED]");
+            Color statusColor = quest.isCompleted ? GREEN : (quest.isAccepted ? YELLOW : GRAY);
+
+            DrawText((prefix + quest.title).c_str(), boxX + 40, itemY + 10, 16, WHITE);
+            DrawText(statusText.c_str(), boxX + boxWidth - 160, itemY + 10, 12, statusColor);
+            DrawText(quest.description.c_str(), boxX + 40, itemY + 32, 12, LIGHTGRAY);
+
+            std::string progressStr = "Progress: " + std::to_string(quest.currentProgress) + " / " + std::to_string(quest.targetProgress);
+            std::string rewardStr = "Reward: " + std::to_string(quest.rewardGold) + " Gold, " + std::to_string(quest.rewardXP) + " XP";
+
+            DrawText(progressStr.c_str(), boxX + 40, itemY + 48, 11, SKYBLUE);
+            DrawText(rewardStr.c_str(), boxX + 350, itemY + 48, 11, ORANGE);
+        }
+    }
 }

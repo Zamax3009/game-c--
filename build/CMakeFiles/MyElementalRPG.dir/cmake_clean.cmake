@@ -23,6 +23,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/MyElementalRPG.dir/src/entities/Player.cpp.obj.d"
   "CMakeFiles/MyElementalRPG.dir/src/main.cpp.obj"
   "CMakeFiles/MyElementalRPG.dir/src/main.cpp.obj.d"
+  "CMakeFiles/MyElementalRPG.dir/vendor/sqlite/sqlite3.c.obj"
+  "CMakeFiles/MyElementalRPG.dir/vendor/sqlite/sqlite3.c.obj.d"
   "MyElementalRPG.exe"
   "MyElementalRPG.exe.manifest"
   "MyElementalRPG.pdb"
@@ -30,6 +32,6 @@ file(REMOVE_RECURSE
 )
 
 # Per-language clean rules from dependency scanning.
-foreach(lang CXX)
+foreach(lang C CXX)
   include(CMakeFiles/MyElementalRPG.dir/cmake_clean_${lang}.cmake OPTIONAL)
 endforeach()

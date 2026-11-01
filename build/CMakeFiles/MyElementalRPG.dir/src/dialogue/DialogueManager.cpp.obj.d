@@ -108,6 +108,27 @@ CMakeFiles/MyElementalRPG.dir/src/dialogue/DialogueManager.cpp.obj: \
  C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/stdarg.h \
  C:/msys64/ucrt64/include/stdarg.h \
  C:/msys64/ucrt64/include/_mingw_stdarg.h \
+ C:/Users/szamb/Documents/Andrea/game\ c++/src/core/GameEngine.h \
+ C:/Users/szamb/DOCUME~1/Andrea/GAMEC_~1/external/raylib/src/raymath.h \
+ C:/msys64/ucrt64/include/c++/15.2.0/math.h \
+ C:/msys64/ucrt64/include/c++/15.2.0/cmath \
+ C:/msys64/ucrt64/include/math.h \
+ C:/msys64/ucrt64/include/c++/15.2.0/bits/specfun.h \
+ C:/msys64/ucrt64/include/c++/15.2.0/limits \
+ C:/msys64/ucrt64/include/c++/15.2.0/tr1/gamma.tcc \
+ C:/msys64/ucrt64/include/c++/15.2.0/tr1/special_function_util.h \
+ C:/msys64/ucrt64/include/c++/15.2.0/tr1/bessel_function.tcc \
+ C:/msys64/ucrt64/include/c++/15.2.0/tr1/beta_function.tcc \
+ C:/msys64/ucrt64/include/c++/15.2.0/tr1/ell_integral.tcc \
+ C:/msys64/ucrt64/include/c++/15.2.0/tr1/exp_integral.tcc \
+ C:/msys64/ucrt64/include/c++/15.2.0/tr1/hypergeometric.tcc \
+ C:/msys64/ucrt64/include/c++/15.2.0/tr1/legendre_function.tcc \
+ C:/msys64/ucrt64/include/c++/15.2.0/tr1/modified_bessel_func.tcc \
+ C:/msys64/ucrt64/include/c++/15.2.0/tr1/poly_hermite.tcc \
+ C:/msys64/ucrt64/include/c++/15.2.0/tr1/poly_laguerre.tcc \
+ C:/msys64/ucrt64/include/c++/15.2.0/tr1/riemann_zeta.tcc \
+ C:/Users/szamb/Documents/Andrea/game\ c++/src/entities/Player.h \
+ C:/Users/szamb/Documents/Andrea/game\ c++/src/dialogue/DialogueManager.h \
  C:/Users/szamb/DOCUME~1/Andrea/GAMEC_~1/external/json/nlohmann/json.hpp \
  C:/msys64/ucrt64/include/c++/15.2.0/algorithm \
  C:/msys64/ucrt64/include/c++/15.2.0/bits/stl_algo.h \
@@ -184,22 +205,6 @@ CMakeFiles/MyElementalRPG.dir/src/dialogue/DialogueManager.cpp.obj: \
  C:/msys64/ucrt64/include/c++/15.2.0/bits/stl_map.h \
  C:/msys64/ucrt64/include/c++/15.2.0/bits/stl_multimap.h \
  C:/msys64/ucrt64/include/c++/15.2.0/valarray \
- C:/msys64/ucrt64/include/c++/15.2.0/cmath \
- C:/msys64/ucrt64/include/math.h \
- C:/msys64/ucrt64/include/c++/15.2.0/bits/specfun.h \
- C:/msys64/ucrt64/include/c++/15.2.0/limits \
- C:/msys64/ucrt64/include/c++/15.2.0/tr1/gamma.tcc \
- C:/msys64/ucrt64/include/c++/15.2.0/tr1/special_function_util.h \
- C:/msys64/ucrt64/include/c++/15.2.0/tr1/bessel_function.tcc \
- C:/msys64/ucrt64/include/c++/15.2.0/tr1/beta_function.tcc \
- C:/msys64/ucrt64/include/c++/15.2.0/tr1/ell_integral.tcc \
- C:/msys64/ucrt64/include/c++/15.2.0/tr1/exp_integral.tcc \
- C:/msys64/ucrt64/include/c++/15.2.0/tr1/hypergeometric.tcc \
- C:/msys64/ucrt64/include/c++/15.2.0/tr1/legendre_function.tcc \
- C:/msys64/ucrt64/include/c++/15.2.0/tr1/modified_bessel_func.tcc \
- C:/msys64/ucrt64/include/c++/15.2.0/tr1/poly_hermite.tcc \
- C:/msys64/ucrt64/include/c++/15.2.0/tr1/poly_laguerre.tcc \
- C:/msys64/ucrt64/include/c++/15.2.0/tr1/riemann_zeta.tcc \
  C:/msys64/ucrt64/include/c++/15.2.0/bits/valarray_array.h \
  C:/msys64/ucrt64/include/c++/15.2.0/bits/valarray_array.tcc \
  C:/msys64/ucrt64/include/c++/15.2.0/bits/valarray_before.h \

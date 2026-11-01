@@ -8,6 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "C:/Users/szamb/Documents/Andrea/game c++/vendor/sqlite/sqlite3.c" "CMakeFiles/MyElementalRPG.dir/vendor/sqlite/sqlite3.c.obj" "gcc" "CMakeFiles/MyElementalRPG.dir/vendor/sqlite/sqlite3.c.obj.d"
   "C:/Users/szamb/Documents/Andrea/game c++/external/imgui/imgui.cpp" "CMakeFiles/MyElementalRPG.dir/external/imgui/imgui.cpp.obj" "gcc" "CMakeFiles/MyElementalRPG.dir/external/imgui/imgui.cpp.obj.d"
   "C:/Users/szamb/Documents/Andrea/game c++/external/imgui/imgui_demo.cpp" "CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_demo.cpp.obj" "gcc" "CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_demo.cpp.obj.d"
   "C:/Users/szamb/Documents/Andrea/game c++/external/imgui/imgui_draw.cpp" "CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_draw.cpp.obj" "gcc" "CMakeFiles/MyElementalRPG.dir/external/imgui/imgui_draw.cpp.obj.d"

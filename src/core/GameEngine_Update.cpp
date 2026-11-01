@@ -12,9 +12,13 @@ void GameEngine::update() {
     }
 
     if (IsKeyPressed(KEY_F5)) {
-        saveGame("saveGame.sav");
-        TraceLog(LOG_INFO, "Game saved successsfully.");
-        m_notificationTime = 2.0f;
+        saveGame("savegame.sav");
+        showNotification("Game saved successfully!");
+    }
+
+    if (m_player.getLevel() > m_lastPlayerLevel) {
+        m_lastPlayerLevel = m_player.getLevel();
+        showNotification("LEVEL UP! Reached Lv. " + std::to_string(m_lastPlayerLevel));
     }
 
     if (m_notificationTime > 0.0f) {
@@ -44,6 +48,9 @@ void GameEngine::update() {
     // SHOP STATE MANAGEMENT
     else if (m_currentState == GameState::Shop) {
         updateShop();
+    }
+    else if (m_currentState == GameState::QuestLog) {
+        updateQuestLog();
     }
 }
 
@@ -179,10 +186,38 @@ void GameEngine::updateCombat() {
                     m_player.heal(chosenAttack.healing);
                 }
                 if (m_activeEnemy->getHealth() <= 0) {
-                        m_activeEnemy->setDefeated(true);
-                        m_lastLootGold = 25;
-                        m_player.addGold(m_lastLootGold);
-                        m_currentPhase = CombatPhase::Victory;
+                    m_activeEnemy->setDefeated(true);
+                    m_lastLootGold = 25;
+                    m_player.addGold(m_lastLootGold);
+                    int xpReward = m_activeEnemy->getLevel() * 40;
+                    m_player.addXP(xpReward);
+
+                    if (m_activeEnemy->getName() == "Goblin") {
+                        for (auto& quest : m_quests) {
+                            if (quest.id == QuestID::GoblinHunt && quest.isAccepted && !quest.isCompleted) {
+                                quest.currentProgress++;
+                                if (quest.currentProgress >= quest.targetProgress) {
+                                    completeQuest(quest);
+                                }
+                            }
+                        }
+                    }
+
+                    Vector2 dropPos = m_activeEnemy->getPosition();
+                    m_worldItems.push_back(
+                        WorldItem(
+                            ItemID::HealthElixir, 
+                            "Health Elixir", 
+                            "Heals a small amount of damage.", 
+                            1, 
+                            dropPos, 
+                            m_selectRealm, 
+                            ItemType::Heal, 
+                            35, 
+                            false
+                        )
+                    );
+                    m_currentPhase = CombatPhase::Victory;
                     }
                 else {
                     m_player.takeDamage(m_activeEnemy->getAttackPower());
@@ -191,6 +226,33 @@ void GameEngine::updateCombat() {
                         m_currentPhase = CombatPhase::Defeat;
                     }
                 }
+            }
+        }
+        if (IsKeyPressed(KEY_H)) {
+            bool itemUsed = false;
+            for (size_t i = 0; i < m_inventory.size(); i++) {
+                auto& item = m_inventory[i];
+                if (item.type == ItemType::Heal && item.quantity > 0) {
+                    m_player.heal(item.attribute);
+                    item.quantity--;
+
+                    if (item.quantity <= 0) {
+                        m_inventory.removeItem(i);
+                    }
+
+                    itemUsed = true;
+                    TraceLog(LOG_INFO, "Health potion used in combat");
+                    break;
+                }
+            }
+            if (itemUsed) {
+                m_player.takeDamage(m_activeEnemy->getAttackPower());
+
+                if (m_player.getHP() <= 0) {
+                    m_currentPhase = CombatPhase::Defeat;
+                }
+            } else {
+                TraceLog(LOG_WARNING, "No health elixirs avelable in inventory.");
             }
         }
         if (IsKeyPressed(KEY_R)) {
@@ -220,7 +282,6 @@ void GameEngine::updateInventory() {
         m_currentState = GameState::RegionHub;
         return;
     }
-
     if (m_inventory.isEmpty()) return;
 
     if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
@@ -233,15 +294,12 @@ void GameEngine::updateInventory() {
     if (IsKeyPressed(KEY_E) || IsKeyPressed(KEY_ENTER)) {
         auto& item = m_inventory[m_inventoryIndex];
         bool itemUsed = false;
-
         switch (item.type)
         {
         case ItemType::Heal:
             m_player.heal(item.attribute);
             itemUsed = true;
             break;
-        
-
         case ItemType::RestoreMana:
             m_player.addMana(item.attribute);
             itemUsed = true;
@@ -250,10 +308,8 @@ void GameEngine::updateInventory() {
         default:
             break;
         }
-
         if (itemUsed) {
             item.quantity--;
-
             if (item.quantity <= 0) {
                 m_inventory.removeItem(m_inventoryIndex);
                 if (m_inventoryIndex >= m_inventory.size() && !m_inventory.isEmpty()) {
@@ -261,7 +317,6 @@ void GameEngine::updateInventory() {
                 }
             }
         }
-        
     }
 }
 
@@ -294,10 +349,32 @@ void GameEngine::updateCamera(const RegionHubG* currentHub) {
 void GameEngine::updateRegionHubNotMap(RegionHubG* currentHub) {
     playerMovement(4.0f);
     Vector2 playerPos = m_player.getPosition();
-    
+    if (IsKeyPressed(KEY_J)) {
+        m_currentState = GameState::QuestLog;
+    }
     for (auto& enemy : currentHub->enemies) {
         if (!enemy.isDefeated()) {
             enemy.updateAI(playerPos);
+
+            Rectangle enemyRec = {
+                enemy.getPosition().x - (enemy.getCollisionBox().x / 2.0f),
+                enemy.getPosition().y - (enemy.getCollisionBox().y / 2.0f),
+                enemy.getCollisionBox().x,
+                enemy.getCollisionBox().y
+            };
+
+            Rectangle playerRec = {
+                playerPos.x,
+                playerPos.y,
+                10.0f,
+                15.0f
+            };
+
+            if (CheckCollisionRecs(playerRec, enemyRec)) {
+                m_activeEnemy = &enemy;
+                m_currentState = GameState::Combat;
+                break;
+            }
         }
     }
 
@@ -336,25 +413,6 @@ void GameEngine::updateRegionHubNotMap(RegionHubG* currentHub) {
         }
     }
 
-    if (IsKeyPressed(KEY_SPACE)) {
-        for (auto& enemy : currentHub->enemies) {
-            if (!enemy.isDefeated()) {
-                Rectangle enemyRec = {
-                    enemy.getPosition().x - (enemy.getCollisionBox().x / 2.0f),
-                    enemy.getPosition().y - (enemy.getCollisionBox().y / 2.0f),
-                    enemy.getCollisionBox().x,
-                    enemy.getCollisionBox().y
-                };
-
-                if (CheckCollisionPointRec(playerPos, enemyRec)) {
-                    m_activeEnemy = &enemy;
-                    m_currentState = GameState::Combat;
-                    break;
-                }
-            }
-        }
-    }
-
     if (IsKeyPressed(KEY_E)){
     for (auto& wItem : m_worldItems) {
         if (!wItem.isCollected() && wItem.getRealm() == m_selectRealm) {
@@ -362,6 +420,17 @@ void GameEngine::updateRegionHubNotMap(RegionHubG* currentHub) {
             if (dist < 35.0f) {
                 wItem.setCollected(true);
                 m_inventory.addItem(createItem(wItem.getID(), wItem.getQuantity()));
+
+                if (wItem.getID() == ItemID::ElementalCrystal) {
+                    for (auto& quest : m_quests) {
+                        if (quest.id == QuestID::CrystalGathering && quest.isAccepted && !quest.isCompleted) {
+                            quest.currentProgress++;
+                            if (quest.currentProgress >= quest.targetProgress) {
+                                completeQuest(quest);
+                            }
+                        }
+                    }
+                }
                 break;
             }
         }
@@ -376,27 +445,72 @@ void GameEngine::updateShop() {
         m_currentState = GameState::RegionHub;
         return;
     }
-
-    if (m_shopItems.empty()) return;
-
-    if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
-        m_shopIndex = (m_shopIndex - 1 + m_shopItems.size()) % m_shopItems.size();
+    if (IsKeyPressed(KEY_TAB) || IsKeyPressed(KEY_V)) {
+        m_isShopSelling = !m_isShopSelling;
+        m_shopIndex = 0;
     }
-    if (IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN)) {
-        m_shopIndex = (m_shopIndex + 1) % m_shopItems.size();
-    }
+    if (!m_isShopSelling) {
+        if (m_shopItems.empty()) return;
 
-    if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_E)) {
-        const auto& shopItem = m_shopItems[m_shopIndex];
+        if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
+            m_shopIndex = (m_shopIndex - 1 + m_shopItems.size()) % m_shopItems.size();
+        }
+        if (IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN)) {
+            m_shopIndex = (m_shopIndex + 1) % m_shopItems.size();
+        }
 
-        if (m_player.payGold(shopItem.price)) {
-            Item purchasedItem = createItem(shopItem.id, 1);
-            m_inventory.addItem(purchasedItem);
+        if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_E)) {
+            const auto& shopItem = m_shopItems[m_shopIndex];
 
-            TraceLog(LOG_INFO, "Item purchased successfully.");
-        } else {
-            TraceLog(LOG_WARNING, "Not enough gold.");
+            if (m_player.payGold(shopItem.price)) {
+                Item purchasedItem = createItem(shopItem.id, 1);
+                m_inventory.addItem(purchasedItem);
+
+                TraceLog(LOG_INFO, "Item purchased successfully.");
+            } else {
+                TraceLog(LOG_WARNING, "Not enough gold.");
+            }
+        }
+    } else {
+        if (m_inventory.isEmpty()) return;
+
+        if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
+            m_shopIndex = (m_shopIndex - 1 + m_inventory.size()) % m_inventory.size();
+        }
+        if (IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN)) {
+            m_shopIndex = (m_shopIndex + 1) % m_inventory.size();
+        }
+        
+        if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_E)) {
+            if (m_shopIndex < m_inventory.size()) {
+                auto& item = m_inventory[m_shopIndex];
+
+                int sellPrice = 10;
+                if (item.id == ItemID::AncientScroll || item.id == ItemID::ElementalCrystal) sellPrice = 25;
+
+                m_player.addGold(sellPrice);
+                m_inventory.removeItem(m_shopIndex, 1);
+
+                if (m_shopIndex >= m_inventory.size() && !m_inventory.isEmpty()) {
+                    m_shopIndex = m_inventory.size() - 1;
+                }
+
+                TraceLog(LOG_INFO, "Item sold successfully");
+            }
         }
     }
+}
+void GameEngine::updateQuestLog() {
+    if (IsKeyPressed(KEY_J) || IsKeyPressed(KEY_I)) {
+        m_currentState = GameState::RegionHub;
+        return;
+    }
+    if (m_quests.empty()) return;
 
+    if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
+        m_questLogIndex = (m_questLogIndex - 1 + m_quests.size()) % m_quests.size();
+    }
+    if (IsKeyPressed(KEY_S) || IsKeyPressed(KEY_DOWN)) {
+        m_questLogIndex = (m_questLogIndex + 1) % m_quests.size();
+    }
 }

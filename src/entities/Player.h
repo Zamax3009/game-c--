@@ -123,6 +123,9 @@ public:
     int getMaxHP() const { return m_maxHP; }
     int getMana() const { return m_mana; }
     int getMaxMana() const { return m_maxMana; }
+    int getLevel() const { return m_level; }
+    int getXP() const { return m_xp; }
+    int getXPToNextLevel() const { return m_xpToNextLevel; }
 
     // SETTERS
     // Resource management
@@ -136,6 +139,7 @@ public:
         if (m_hp < 0) m_hp = 0;
     }
     void setMaxHp(int maxHP) { m_maxHP = maxHP; }
+    void addMaxHp(int amount) { m_maxHP += amount; }
     void resetHP() { m_hp = m_maxHP; }
     void heal(int amount) { 
         m_hp += amount;
@@ -157,7 +161,21 @@ public:
     }
     void resetMana(int amount) { m_mana = m_maxMana; }
     void resetToDefault();
-    // Reputation and Elemental Mastery management
+    void addXP(int amount) {
+        m_xp += amount;
+        while (m_xp >= m_xpToNextLevel) {
+            m_xp -= m_xpToNextLevel;
+            levelUp();
+        }
+    }
+    void levelUp() {
+        m_level++;
+        m_xpToNextLevel = static_cast<int>(m_xpToNextLevel * 1.5f);
+        addMaxHp(25);
+        resetHP();
+    }
+    void setLevel(int amount) { m_level = amount; }
+    void setXP(int amount) { m_xp = amount; }
     void modifyReputation(Realm realm, int amount);
     void modifyMastery(Realm realm, int amount);
 
@@ -174,6 +192,9 @@ private:
     FactionReputation m_reputation;
     ElementalMastery m_mastery;
     std::vector<Attack> m_attacks;
+    int m_level = 1;
+    int m_xp = 0;
+    int m_xpToNextLevel = 100;
 };
 
 #endif

@@ -186,4 +186,5 @@ CMakeFiles/MyElementalRPG.dir/src/core/GameEngine.cpp.obj: \
  C:/msys64/ucrt64/include/c++/15.2.0/x86_64-w64-mingw32/bits/c++io.h \
  C:/msys64/ucrt64/include/c++/15.2.0/bits/fstream.tcc \
  C:/msys64/ucrt64/include/c++/15.2.0/sstream \
- C:/msys64/ucrt64/include/c++/15.2.0/bits/sstream.tcc
+ C:/msys64/ucrt64/include/c++/15.2.0/bits/sstream.tcc \
+ C:/Users/szamb/DOCUME~1/Andrea/GAMEC_~1/vendor/sqlite/sqlite3.h
