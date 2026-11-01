@@ -20,9 +20,10 @@ This project was created to explore custom 2D engine development in C++ without 
 ### Exploration & Navigation
 * **W / A / S / D** or **Arrow Keys**: Move character
 * **E**: Interact with world items
-* **SPACE**: Engage enemy in combat (when nearby)
 * **I**: Toggle Inventory screen
 * **M**: Toggle Map view
+* **J**: Toggle Quest diary
+* **V**: Change the shop from buy to sell
 
 ### Combat System
 * **1**: Quick Strike (Light Attack)
