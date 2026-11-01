@@ -30,6 +30,11 @@ enum class CombatPhase {
     Defeat
 };
 
+struct WallCollider {
+    Rectangle bounds;
+};
+
+
 class Enemy {
 private:
     std::string m_name;
@@ -42,15 +47,17 @@ private:
     Rectangle m_collisionBox;
     Color m_color;
     bool m_isDefeated;
-    float m_speed = 1.5f;
+    float m_speed = 1.2f;
     bool m_isReturning = false;
 
 public:
-    // Constructor
     Enemy(std::string name, int level, int hp, int attack, Vector2 pos, Rectangle box, Color col)
-        : m_name(name), m_level(level), m_health(hp), m_maxHealth(hp), m_attackPower(attack), m_position(pos), m_spawnPosition(pos), m_collisionBox(box), m_color(col), m_isDefeated(false) {}
-
-    // Getters
+        : m_name(name), m_level(level), m_health(hp), m_maxHealth(hp), m_attackPower(attack), 
+          m_position(pos), m_spawnPosition(pos), m_color(col), m_isDefeated(false) {
+        float w = (box.width > 0.0f) ? box.width : (box.x > 0.0f ? box.x : 20.0f);
+        float h = (box.height > 0.0f) ? box.height : (box.y > 0.0f ? box.y : 20.0f);
+        m_collisionBox = { pos.x - (w / 2.0f), pos.y - (h / 2.0f), w, h };
+    }
     std::string getName() const { return m_name; }
     int getLevel() const { return m_level; }
     int getHealth() const { return m_health; }
@@ -61,7 +68,6 @@ public:
     Color getColor() const { return m_color; }
     bool isDefeated() const { return m_isDefeated; }
 
-    // Setters
     void takeDamage(int amount) {
         m_health -= amount;
         if (m_health < 0) m_health = 0;
@@ -69,45 +75,88 @@ public:
     void setHealth(int hp) { m_health = hp; }
     void setDefeated(bool defeated) { m_isDefeated = defeated; }
 
-    // Enemy AI logic
-    void updateAI(Vector2 playerPos) {
+    void updateAI(Vector2 playerPos, const std::vector<WallCollider>& walls, Rectangle hubBounds) {
         if (m_isDefeated) return;
         
         float distToPlayer = Vector2Distance(m_position, playerPos);
         float distToSpawn = Vector2Distance(m_position, m_spawnPosition);
-        float agroRange = 150.0f;
-        float leashRange = 300.0f;
+        float agroRange = 160.0f;
+        float leashRange = 320.0f;
 
         if (distToSpawn > leashRange) {
             m_isReturning = true;
-        }
-        else if (distToSpawn < 10.0f && m_isReturning) {
+        } else if (distToSpawn < 10.0f && m_isReturning) {
             m_isReturning = false;
         }
 
         Vector2 target;
         if (m_isReturning) {
             target = m_spawnPosition;
-        }
-        else if (distToPlayer < agroRange) {
+        } else if (distToPlayer < agroRange) {
             target = playerPos;
-        }
-        else if (distToSpawn > 5.0f) {
+        } else if (distToSpawn > 5.0f) {
             target = m_spawnPosition;
-        }
-        else {
+        } else {
             return;
         }
 
         float distToTarget = Vector2Distance(m_position, target);
         if (distToTarget <= m_speed) {
             m_position = target;
-        } else {
-            Vector2 direction = Vector2Normalize(Vector2Subtract(target, m_position));
-            m_position = Vector2Add(m_position, Vector2Scale(direction, m_speed));
+            return;
         }
         
-    } 
+        Vector2 direction = Vector2Normalize(Vector2Subtract(target, m_position));
+
+        float nextX = m_position.x + (direction.x * m_speed);
+        Rectangle nextRectX = {
+            nextX - (m_collisionBox.width / 2.0f),
+            m_position.y - (m_collisionBox.height / 2.0f),
+            m_collisionBox.width,
+            m_collisionBox.height
+        };
+
+        bool collisionX = false;
+        if (nextRectX.x < hubBounds.x || (nextRectX.x + nextRectX.width) > (hubBounds.x + hubBounds.width)) {
+            collisionX = true;
+        } else {
+            for (const auto& wall : walls) {
+                if (CheckCollisionRecs(nextRectX, wall.bounds)) {
+                    collisionX = true;
+                    break;
+                }
+            }
+        }
+        if (!collisionX) {
+            m_position.x = nextX;
+        }
+
+        float nextY = m_position.y + (direction.y * m_speed);
+        Rectangle nextRectY = {
+            m_position.x - (m_collisionBox.width / 2.0f),
+            nextY - (m_collisionBox.height / 2.0f),
+            m_collisionBox.width,
+            m_collisionBox.height
+        };
+
+        bool collisionY = false;
+        if (nextRectY.y < hubBounds.y || (nextRectY.y + nextRectY.height) > (hubBounds.y + hubBounds.height)) {
+            collisionY = true;
+        } else {
+            for (const auto& wall : walls) {
+                if (CheckCollisionRecs(nextRectY, wall.bounds)) {
+                    collisionY = true;
+                    break;
+                }
+            }
+        }
+        if (!collisionY) {
+            m_position.y = nextY;
+        }
+
+        m_collisionBox.x = m_position.x - (m_collisionBox.width / 2.0f);
+        m_collisionBox.y = m_position.y - (m_collisionBox.height / 2.0f);
+    }
 };
 
 
@@ -140,10 +189,6 @@ public:
 
     //SETTERS
     void setCollected(bool collected) { m_isCollected = collected; }
-};
-
-struct WallCollider {
-    Rectangle bounds;
 };
 
 struct Buildings {

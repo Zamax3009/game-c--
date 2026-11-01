@@ -169,6 +169,7 @@ void GameEngine::updateRegionHub() {
     }
 }
 
+/// @brief 
 void GameEngine::updateCombat() {
     if (!m_activeEnemy) return;
     if (m_currentPhase == CombatPhase::ActionSelect) {
@@ -352,16 +353,19 @@ void GameEngine::updateRegionHubNotMap(RegionHubG* currentHub) {
     if (IsKeyPressed(KEY_J)) {
         m_currentState = GameState::QuestLog;
     }
+    std::vector<WallCollider> activeWalls;
+    for (const auto& regionBldg : m_buildings) {
+        if (regionBldg.realm == m_selectRealm) {
+            for (const auto& bldg : regionBldg.buildings) {
+                activeWalls.insert(activeWalls.end(), bldg.walls.begin(), bldg.walls.end());
+            }
+        }
+    }
     for (auto& enemy : currentHub->enemies) {
         if (!enemy.isDefeated()) {
-            enemy.updateAI(playerPos);
+            enemy.updateAI(playerPos, activeWalls, currentHub->rectangle);
 
-            Rectangle enemyRec = {
-                enemy.getPosition().x - (enemy.getCollisionBox().x / 2.0f),
-                enemy.getPosition().y - (enemy.getCollisionBox().y / 2.0f),
-                enemy.getCollisionBox().x,
-                enemy.getCollisionBox().y
-            };
+            Rectangle enemyRec = enemy.getCollisionBox();
 
             Rectangle playerRec = {
                 playerPos.x,
@@ -414,29 +418,28 @@ void GameEngine::updateRegionHubNotMap(RegionHubG* currentHub) {
     }
 
     if (IsKeyPressed(KEY_E)){
-    for (auto& wItem : m_worldItems) {
-        if (!wItem.isCollected() && wItem.getRealm() == m_selectRealm) {
-            float dist = Vector2Distance(playerPos, wItem.getPosition());
-            if (dist < 35.0f) {
-                wItem.setCollected(true);
-                m_inventory.addItem(createItem(wItem.getID(), wItem.getQuantity()));
+        for (auto& wItem : m_worldItems) {
+            if (!wItem.isCollected() && wItem.getRealm() == m_selectRealm) {
+                float dist = Vector2Distance(playerPos, wItem.getPosition());
+                if (dist < 35.0f) {
+                    wItem.setCollected(true);
+                    m_inventory.addItem(createItem(wItem.getID(), wItem.getQuantity()));
 
-                if (wItem.getID() == ItemID::ElementalCrystal) {
-                    for (auto& quest : m_quests) {
-                        if (quest.id == QuestID::CrystalGathering && quest.isAccepted && !quest.isCompleted) {
-                            quest.currentProgress++;
-                            if (quest.currentProgress >= quest.targetProgress) {
-                                completeQuest(quest);
+                    if (wItem.getID() == ItemID::ElementalCrystal) {
+                        for (auto& quest : m_quests) {
+                            if (quest.id == QuestID::CrystalGathering && quest.isAccepted && !quest.isCompleted) {
+                                quest.currentProgress++;
+                                if (quest.currentProgress >= quest.targetProgress) {
+                                    completeQuest(quest);
+                                }
                             }
                         }
                     }
+                    break;
                 }
-                break;
             }
         }
     }
-}
-
     updateCamera(currentHub);
 }
 

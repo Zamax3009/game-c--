@@ -461,12 +461,7 @@ void GameEngine::renderRegion() {
 
     for (const auto& enemy : currentHub->enemies) {
         if (!enemy.isDefeated()){
-            Rectangle enemyRec = {
-                enemy.getPosition().x - (enemy.getCollisionBox().x / 2.0f),
-                enemy.getPosition().y - (enemy.getCollisionBox().y / 2.0f),
-                enemy.getCollisionBox().x,
-                enemy.getCollisionBox().y
-            };
+            Rectangle enemyRec = enemy.getCollisionBox();
 
             DrawRectangleRec(enemyRec, enemy.getColor());
             DrawRectangleLinesEx(enemyRec, 1, RED);
