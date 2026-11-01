@@ -159,6 +159,7 @@ public:
         if (m_mana > m_maxMana) m_mana = m_maxMana;
         if (m_mana < 0) m_mana = 0;
     }
+    void setMaxMana(int amount) { m_maxMana = amount; }
     void resetMana(int amount) { m_mana = m_maxMana; }
     void resetToDefault();
     void addXP(int amount) {
@@ -168,6 +169,7 @@ public:
             levelUp();
         }
     }
+    void setXPToNextLevel(int amount) { m_xpToNextLevel = amount; }
     void levelUp() {
         m_level++;
         m_xpToNextLevel = static_cast<int>(m_xpToNextLevel * 1.5f);

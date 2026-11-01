@@ -23,39 +23,48 @@ void GameEngine::saveGame(const std::string& filename) {
     
     sqlite3_exec(db, "BEGIN TRANSACTION;", nullptr, nullptr, &errMsg);
 
-    std::string createPlayerTable = "CREATE TABLE IF NOT EXISTS player (hp REAL, max_hp INTEGER, gold INTEGER, x REAL, y REAL, realm INTEGER, level INTEGER, xp INTEGER);";
-    if (sqlite3_exec(db, createPlayerTable.c_str(), nullptr, nullptr, &errMsg) != SQLITE_OK) {
-        TraceLog(LOG_ERROR, "SQL Error (Player Table): %s", errMsg);
-        sqlite3_free(errMsg);
-    }
+    std::string createPlayerTable = 
+        "CREATE TABLE IF NOT EXISTS player ("
+        "hp REAL, max_hp INTEGER, mana INTEGER, max_mana INTEGER, gold INTEGER, x REAL, y REAL, realm INTEGER, level INTEGER, xp INTEGER, xp_to_next_level INTEGER, rep_aer INTEGER, rep_aqua INTEGER, rep_terra INTEGER, rep_ignis INTEGER, mast_aer INTEGER, mast_aqua INTEGER, mast_terra INTEGER, mast_ignis INTEGER);";
+    
+    sqlite3_exec(db, createPlayerTable.c_str(), nullptr, nullptr, &errMsg);
     sqlite3_exec(db, "DELETE FROM player;", nullptr, nullptr, &errMsg);
 
     Vector2 playerPos = m_player.getPosition();
     std::string insertPlayer = "INSERT INTO player VALUES (" +
         std::to_string(m_player.getHP()) + ", " +
         std::to_string(m_player.getMaxHP()) + ", " +
+        std::to_string(m_player.getMana()) + ", " +
+        std::to_string(m_player.getMaxMana()) + ", " +
         std::to_string(m_player.getGold()) + ", " +
         std::to_string(playerPos.x) + ", " +
         std::to_string(playerPos.y) + ", " +
         std::to_string(static_cast<int>(m_selectRealm)) + ", " +
         std::to_string(m_player.getLevel()) + ", " +
-        std::to_string(m_player.getXP()) + ");";
-    sqlite3_exec(db, insertPlayer.c_str(), nullptr, nullptr, &errMsg);
+        std::to_string(m_player.getXP()) + ", " +
+        std::to_string(m_player.getXPToNextLevel()) + ", " +
+        std::to_string(m_player.getReputation(Realm::Aer)) + ", " +
+        std::to_string(m_player.getReputation(Realm::Aqua)) + ", " +
+        std::to_string(m_player.getReputation(Realm::Terra)) + ", " +
+        std::to_string(m_player.getReputation(Realm::Ignis)) + ", " +
+        std::to_string(m_player.getMastery(Realm::Aer)) + ", " +
+        std::to_string(m_player.getMastery(Realm::Aqua)) + ", " +
+        std::to_string(m_player.getMastery(Realm::Terra)) + ", " +
+        std::to_string(m_player.getMastery(Realm::Ignis)) + ");";
     
-    sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS inventory (item_id INTEGER, quantity INTEGER);", nullptr, nullptr, &errMsg);
+    sqlite3_exec(db, insertPlayer.c_str(), nullptr, nullptr, &errMsg);
+        sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS inventory (item_id INTEGER, quantity INTEGER);", nullptr, nullptr, &errMsg);
     sqlite3_exec(db, "DELETE FROM inventory;", nullptr, nullptr, &errMsg);
     for (const auto& item : m_inventory.getItems()) {
         std::string insertInv = "INSERT INTO inventory VALUES (" + std::to_string(static_cast<int>(item.id)) + ", " + std::to_string(item.quantity) + ");";
         sqlite3_exec(db, insertInv.c_str(), nullptr, nullptr, &errMsg);
     }
-
     sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS world_items (item_index INTEGER, is_collected INTEGER);", nullptr, nullptr, &errMsg);
     sqlite3_exec(db, "DELETE FROM world_items;", nullptr, nullptr, &errMsg);
     for (size_t i = 0; i < m_worldItems.size(); i++) {
         std::string insertWI = "INSERT INTO world_items VALUES (" + std::to_string(i) + ", " + (m_worldItems[i].isCollected() ? "1" : "0") + ");";
         sqlite3_exec(db, insertWI.c_str(), nullptr, nullptr, &errMsg);
     }
-
     sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS enemies (hub_index INTEGER, enemy_index INTEGER, is_defeated INTEGER);", nullptr, nullptr, &errMsg);
     sqlite3_exec(db, "DELETE FROM enemies;", nullptr, nullptr, &errMsg);
     for (size_t h = 0; h < m_regionHub.size(); h++) {
@@ -64,7 +73,6 @@ void GameEngine::saveGame(const std::string& filename) {
             sqlite3_exec(db, insertEnemy.c_str(), nullptr, nullptr, &errMsg);
         }
     }
-
     sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS quests (quest_id INTEGER, is_accepted INTEGER, is_completed INTEGER, current_progress INTEGER);", nullptr, nullptr, &errMsg);
     sqlite3_exec(db, "DELETE FROM quests;", nullptr, nullptr, &errMsg);
     for (const auto& quest : m_quests) {
@@ -78,8 +86,9 @@ void GameEngine::saveGame(const std::string& filename) {
 
     sqlite3_exec(db, "END TRANSACTION;", nullptr, nullptr, &errMsg);
     sqlite3_close(db);
-    TraceLog(LOG_INFO, "Game saved successfully.");
+    TraceLog(LOG_INFO, "Game saved successfully to SQLite.");
 }
+
 void GameEngine::loadGame(const std::string& filename) {
     sqlite3* db;
     sqlite3_stmt* stmt;
@@ -90,17 +99,33 @@ void GameEngine::loadGame(const std::string& filename) {
         return;
     }
 
-    if (sqlite3_prepare_v2(db, "SELECT hp, max_hp, gold, x, y, realm, level, xp FROM player;", -1, &stmt, nullptr) == SQLITE_OK) {
+    std::string selectPlayerQuery = "SELECT hp, max_hp, mana, max_mana, gold, x, y, realm, level, xp, xp_to_next_level, rep_aer, rep_aqua, rep_terra, rep_ignis, mast_aer, mast_aqua, mast_terra, mast_ignis FROM player;";
+    
+    if (sqlite3_prepare_v2(db, selectPlayerQuery.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         if (sqlite3_step(stmt) == SQLITE_ROW) {
             m_player.setHP(static_cast<float>(sqlite3_column_double(stmt, 0)));
             m_player.setMaxHp(sqlite3_column_int(stmt, 1));
-            m_player.setGold(sqlite3_column_int(stmt, 2));
-            float posX = static_cast<float>(sqlite3_column_double(stmt, 3));
-            float posY = static_cast<float>(sqlite3_column_double(stmt, 4));
+            m_player.setMana(sqlite3_column_int(stmt, 2));
+            m_player.setMaxMana(sqlite3_column_int(stmt, 3));
+            m_player.setGold(sqlite3_column_int(stmt, 4));
+
+            float posX = static_cast<float>(sqlite3_column_double(stmt, 5));
+            float posY = static_cast<float>(sqlite3_column_double(stmt, 6));
             m_player.setPosition({posX, posY});
-            m_selectRealm = static_cast<Realm>(sqlite3_column_int(stmt, 5));
-            m_player.setLevel(sqlite3_column_int(stmt, 6));
-            m_player.setXP(sqlite3_column_int(stmt, 7));
+            
+            m_selectRealm = static_cast<Realm>(sqlite3_column_int(stmt, 7));
+            
+            m_player.setLevel(sqlite3_column_int(stmt, 8));
+            m_player.setXP(sqlite3_column_int(stmt, 9));
+            m_player.setXPToNextLevel(sqlite3_column_int(stmt, 10));
+            m_player.modifyReputation(Realm::Aer, sqlite3_column_int(stmt, 11) - m_player.getReputation(Realm::Aer));
+            m_player.modifyReputation(Realm::Aqua, sqlite3_column_int(stmt, 12) - m_player.getReputation(Realm::Aqua));
+            m_player.modifyReputation(Realm::Terra, sqlite3_column_int(stmt, 13) - m_player.getReputation(Realm::Terra));
+            m_player.modifyReputation(Realm::Ignis, sqlite3_column_int(stmt, 14) - m_player.getReputation(Realm::Ignis));
+            m_player.modifyMastery(Realm::Aer, sqlite3_column_int(stmt, 15) - m_player.getMastery(Realm::Aer));
+            m_player.modifyMastery(Realm::Aqua, sqlite3_column_int(stmt, 16) - m_player.getMastery(Realm::Aqua));
+            m_player.modifyMastery(Realm::Terra, sqlite3_column_int(stmt, 17) - m_player.getMastery(Realm::Terra));
+            m_player.modifyMastery(Realm::Ignis, sqlite3_column_int(stmt, 18) - m_player.getMastery(Realm::Ignis));
         }
         sqlite3_finalize(stmt);
     }
@@ -112,8 +137,8 @@ void GameEngine::loadGame(const std::string& filename) {
             int qty = sqlite3_column_int(stmt, 1);
             m_inventory.addItem(createItem(id, qty));
         }
+        sqlite3_finalize(stmt);
     }
-    sqlite3_finalize(stmt);
 
     if (sqlite3_prepare_v2(db, "SELECT item_index, is_collected FROM world_items;", -1, &stmt, nullptr) == SQLITE_OK) {
         while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -123,8 +148,8 @@ void GameEngine::loadGame(const std::string& filename) {
                 m_worldItems[index].setCollected(collected == 1);
             }
         }
+        sqlite3_finalize(stmt);
     }
-    sqlite3_finalize(stmt);
 
     if (sqlite3_prepare_v2(db, "SELECT hub_index, enemy_index, is_defeated FROM enemies;", -1, &stmt, nullptr) == SQLITE_OK) {
         while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -135,8 +160,8 @@ void GameEngine::loadGame(const std::string& filename) {
                 m_regionHub[h].enemies[e].setDefeated(defeated == 1);
             }
         }
+        sqlite3_finalize(stmt);
     }
-    sqlite3_finalize(stmt);
 
     if (sqlite3_prepare_v2(db, "SELECT quest_id, is_accepted, is_completed, current_progress FROM quests;", -1, &stmt, nullptr) == SQLITE_OK) {
         while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -154,12 +179,12 @@ void GameEngine::loadGame(const std::string& filename) {
                 }
             }
         }
+        sqlite3_finalize(stmt);
     }
-    sqlite3_finalize(stmt);
 
     m_currentState = GameState::RegionHub;
     sqlite3_close(db);
-    TraceLog(LOG_INFO, "Game loaded successfully!");
+    TraceLog(LOG_INFO, "Game loaded successfully from SQLite with all variables!");
 }
 
 void GameEngine::acceptQuest(QuestID id) {
