@@ -24,10 +24,10 @@ public:
     }
 
     void render(GameEngine& engine) override {
-        DrawRectangle(0, 0, 1280, 720, Fade(BLACK, 0.6f));
+        DrawRectangle(0, 0, engine.SCREENSIZEX, engine.SCREENSIZEY, Fade(BLACK, 0.6f));
 
         ImGui::SetNextWindowSize(ImVec2(500, 350), ImGuiCond_Always);
-        ImGui::SetNextWindowPos(ImVec2((1280 - 500) / 2.0f, (720 - 350) / 2.0f), ImGuiCond_Always);
+        ImGui::SetNextWindowPos(ImVec2((engine.SCREENSIZEX - 500) / 2.0f, (engine.SCREENSIZEY - 350) / 2.0f), ImGuiCond_Always);
 
         ImGui::Begin("Opzioni di Gioco", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
 

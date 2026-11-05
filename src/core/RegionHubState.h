@@ -210,6 +210,11 @@ private:
             }
         }
 
+        for (const auto& zone : currentHub->zones) {
+            DrawRectangleRec(zone.bounds, zone.color);
+            DrawText(zone.name.c_str(), zone.bounds.x + 10, zone.bounds.y + 10, 12, WHITE);
+        }
+
         for (const auto& regionBldg : engine.m_buildings){
             if (regionBldg.realm == engine.m_selectRealm){
                 for (auto& bldg : regionBldg.buildings){
@@ -296,7 +301,7 @@ private:
     void renderMinimapContent(GameEngine& engine, RegionHubG* currentHub) {
         float mmWidth = 200.0f;
         float mmHeight = 150.0f;
-        float mmX = 1280.0f - mmWidth - 20.0f;
+        float mmX = engine.SCREENSIZEX - mmWidth - 20.0f;
         float mmY = 20.0f;
 
         DrawRectangle(mmX, mmY, mmWidth, mmHeight, Fade(BLACK, 0.7f));
@@ -343,16 +348,16 @@ private:
 
     void renderHubControlsContent(GameEngine& engine) {
         float boxWidth = 600.0f, boxHeight = 35.0f;
-        float boxX = (1280.0f - boxWidth) / 2.0f, boxY = 720.0f - 45.0f;
+        float boxX = (engine.SCREENSIZEX - boxWidth) / 2.0f, boxY = engine.SCREENSIZEY - 45.0f;
         DrawRectangle(boxX, boxY, boxWidth, boxHeight, Fade(BLACK, 0.3f));
         DrawRectangleLinesEx({boxX, boxY, boxWidth, boxHeight}, 1, DARKGRAY);
         DrawText("[WASD] Move | [E] Collect | [F] Interact | [I] Inventory | [J] Quests | [Q] Map | [F5] Save", boxX + 15, boxY + 11, 12, WHITE);
     }
 
     void renderFastTravelWindow(GameEngine& engine) {
-        DrawRectangle(0, 0, 1280, 720, Fade(BLACK, 0.6f));
+        DrawRectangle(0, 0, engine.SCREENSIZEX, engine.SCREENSIZEY, Fade(BLACK, 0.6f));
         float boxWidth = 500.0f, boxHeight = 400.0f;
-        float boxX = (1280.0f - boxWidth) / 2.0f, boxY = (720.0f - boxHeight) / 2.0f;
+        float boxX = (engine.SCREENSIZEX - boxWidth) / 2.0f, boxY = (engine.SCREENSIZEY - boxHeight) / 2.0f;
 
         DrawRectangle(boxX, boxY, boxWidth, boxHeight, DARKGRAY);
         DrawRectangleLines(boxX, boxY, boxWidth, boxHeight, WHITE);

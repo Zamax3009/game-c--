@@ -164,8 +164,8 @@ external/raylib/raylib/external/glfw/src/clean: external/raylib/raylib/external/
 # Target rules for target CMakeFiles/MyElementalRPG.dir
 
 # All Build rule for target.
-CMakeFiles/MyElementalRPG.dir/all: external/raylib/raylib/CMakeFiles/raylib.dir/all
 CMakeFiles/MyElementalRPG.dir/all: external/raylib/raylib/external/glfw/src/CMakeFiles/glfw.dir/all
+CMakeFiles/MyElementalRPG.dir/all: external/raylib/raylib/CMakeFiles/raylib.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyElementalRPG.dir\build.make CMakeFiles/MyElementalRPG.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyElementalRPG.dir\build.make CMakeFiles/MyElementalRPG.dir/build
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir="C:\Users\szamb\Documents\Andrea\game c++\build\CMakeFiles" --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13,14 "Built target MyElementalRPG"

@@ -26,12 +26,12 @@ public:
     }
 
     void render(GameEngine& engine) override {
-        DrawRectangle(0, 0, 1280, 720, Fade(BLACK, 0.75f));
+        DrawRectangle(0, 0, engine.SCREENSIZEX, engine.SCREENSIZEY, Fade(BLACK, 0.75f));
 
         float boxWidth = 700.0f;
         float boxHeight = 450.0f;
-        float boxX = (1280.0f - boxWidth) / 2.0f;
-        float boxY = (720.0f - boxHeight) / 2.0f;
+        float boxX = (engine.SCREENSIZEX - boxWidth) / 2.0f;
+        float boxY = (engine.SCREENSIZEY - boxHeight) / 2.0f;
 
         DrawRectangle(boxX, boxY, boxWidth, boxHeight, DARKGRAY);
         DrawRectangleLines(boxX, boxY, boxWidth, boxHeight, GOLD);

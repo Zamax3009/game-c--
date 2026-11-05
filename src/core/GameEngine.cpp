@@ -3,6 +3,11 @@
 #include "GameEngine.h"
 #include "PauseState.h"
 #include "OptionsState.h"
+#include "InventoryState.h"
+#include "CombatState.h"
+#include "ShopState.h"
+#include "QuestLogState.h"
+#include "DialogueState.h"
 #include "raylib.h"
 #include "imgui.h"
 #include "rlImGui.h"
@@ -247,19 +252,22 @@ Item GameEngine::createItem(ItemID id, int quantity) {
 }
 
 GameEngine::GameEngine() {
-    InitWindow(1280, 720, "Realms of Elementa - Engine");
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
+    InitWindow(SCREENSIZEX, SCREENSIZEY, "Realms of Elementa - Engine");
     SetExitKey(KEY_NULL);
     InitAudioDevice();
     SetTargetFPS(60);
     rlImGuiSetup(true);
 
-    m_player.setPosition({ 1280.0f / 2.0f, 720.0f / 2.0f});
+    m_targetTexture = LoadRenderTexture(SCREENSIZEX, SCREENSIZEY);
+
+    m_player.setPosition({ SCREENSIZEX / 2.0f, SCREENSIZEY / 2.0f});
     
     m_aquaSound = LoadMusicStream("assets/Aqua_Main_Theme.mp3");
     m_ignisSound = LoadMusicStream("assets/Ignis_Main_Theme.mp3");
     goToMainMenu();
 
-    m_camera.offset = { 1280.0f / 2.0f, 720.0f / 2.0f };
+    m_camera.offset = { SCREENSIZEX / 2.0f, SCREENSIZEY / 2.0f };
     m_camera.rotation = 0.0f;
     m_camera.zoom = 1.5f;
 
@@ -280,7 +288,13 @@ GameEngine::GameEngine() {
                 Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED),
                 Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE)
             },
-            {0, 100, 1280, 620}
+            {0, 100, 1280, 620},
+            { 
+                { "Mount Pyroclast", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKGRAY, false },
+                { "Scorched Steppes", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKBROWN, false },
+                { "Anchient Titan Forge", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKGRAY, false },
+                { "Magma Flow", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKGRAY, true },
+            }
         },
         {
             "Ignis", Realm::Ignis, {
@@ -291,7 +305,13 @@ GameEngine::GameEngine() {
                 Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED),
                 Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE)
             },
-            {0, 100, 1280, 620}
+            {0, 100, 1280, 620},
+            { 
+                { "Mount Pyroclast", { 540.0f, 140.0f, 200.0f, 180.0f }, DARKGRAY, false },
+                { "Scorched Steppes", { 80.0f, 150.0f, 400.0f, 450.0f }, DARKBROWN, false },
+                { "Anchient Titan Forge", { 850.0f, 150.0f, 350.0f, 250.0f }, DARKGRAY, false },
+                { "Magma Flow", { 50.0f, 480.0f, 1180.0f, 40.0f }, DARKGRAY, true },
+            }
         },
         {
             "Aqua", Realm::Aqua, {
@@ -302,7 +322,13 @@ GameEngine::GameEngine() {
                 Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED),
                 Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE)
             },
-            {0, 100, 1280, 620}
+            {0, 100, 1280, 620},
+            { 
+                { "Mount Pyroclast", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKGRAY, false },
+                { "Scorched Steppes", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKBROWN, false },
+                { "Anchient Titan Forge", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKGRAY, false },
+                { "Magma Flow", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKGRAY, true },
+            }
         },
         {
             "Terra", Realm::Terra, {
@@ -313,7 +339,13 @@ GameEngine::GameEngine() {
                 Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED),
                 Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE)
             },
-            {0, 100, 1280, 620}
+            {0, 100, 1280, 620},
+            { 
+                { "Mount Pyroclast", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKGRAY, false },
+                { "Scorched Steppes", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKBROWN, false },
+                { "Anchient Titan Forge", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKGRAY, false },
+                { "Magma Flow", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKGRAY, true },
+            }
         }
     };
 
@@ -371,6 +403,7 @@ GameEngine::GameEngine() {
 
 GameEngine::~GameEngine() {
     rlImGuiShutdown();
+    UnloadRenderTexture(m_targetTexture);
     UnloadMusicStream(m_aquaSound);
     UnloadMusicStream(m_ignisSound);
     CloseAudioDevice();
@@ -399,6 +432,12 @@ bool GameEngine::checkWallCollision(const Rectangle& rec) {
         rec.y < currentHub->rectangle.y ||
         (rec.y + rec.width) > (currentHub->rectangle.y + currentHub->rectangle.height)) {
             return true;
+    }
+
+    for (const auto& zone : currentHub->zones) {
+        if (zone.isHazardous && CheckCollisionRecs(rec, zone.bounds)) {
+            return true;
+        }
     }
 
     for (auto& regionBldg : m_buildings) {
@@ -461,5 +500,5 @@ int GameEngine::getSelectedAttack() {
 
     return -1;
 }
-DialogueManager::DialogueManager() {}
 
+DialogueManager::DialogueManager() {}

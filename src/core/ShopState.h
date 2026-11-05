@@ -74,12 +74,12 @@ public:
     }
 
     void render(GameEngine& engine) override {
-        DrawRectangle(0, 0, 1280, 720, Fade(BLACK, 0.75f));
+        DrawRectangle(0, 0, engine.SCREENSIZEX, engine.SCREENSIZEY, Fade(BLACK, 0.75f));
 
         float shopWidth = 650.0f;
         float shopHeight = 450.0f;
-        float shopX = (1280.0f - shopWidth) / 2.0f;
-        float shopY = (720.0f - shopHeight) / 2.0f;
+        float shopX = (engine.SCREENSIZEX - shopWidth) / 2.0f;
+        float shopY = (engine.SCREENSIZEY - shopHeight) / 2.0f;
 
         DrawRectangle(shopX, shopY, shopWidth, shopHeight, DARKGRAY);
         DrawRectangleLines(shopX, shopY, shopWidth, shopHeight, GOLD);

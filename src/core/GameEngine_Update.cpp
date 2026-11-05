@@ -29,8 +29,8 @@ void GameEngine::updateCamera(const RegionHubG* currentHub) {
     if (!currentHub) return;
 
     Vector2 cameraTarget = m_player.getPosition();
-    float halfScreenWidth = (1280.0f / 2.0f) / m_camera.zoom;
-    float halfScreenHeight = (720.0f / 2.0f) / m_camera.zoom;
+    float halfScreenWidth = (SCREENSIZEX / 2.0f) / m_camera.zoom;
+    float halfScreenHeight = (SCREENSIZEY / 2.0f) / m_camera.zoom;
 
     float minCameraX = currentHub->rectangle.x + halfScreenWidth;
     float maxCameraX = currentHub->rectangle.x + currentHub->rectangle.width - halfScreenWidth;

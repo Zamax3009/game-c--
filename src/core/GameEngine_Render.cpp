@@ -1,13 +1,23 @@
 #include "GameEngine.h"
 #include "raylib.h"
-#include "raymath.h"
-#include "imgui.h"
 #include "rlImGui.h"
+#include "imgui.h"
 
 void GameEngine::render() {
-    BeginDrawing();
+    BeginTextureMode(m_targetTexture);
     ClearBackground(DARKGRAY);
     rlImGuiBegin();
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.DisplaySize = ImVec2(SCREENSIZEX, SCREENSIZEY);
+    float scale = std::min((float)GetScreenWidth() / SCREENSIZEX, (float)GetScreenHeight() / SCREENSIZEY);
+    float offsetX = (GetScreenWidth() - (SCREENSIZEX * scale)) * 0.5f;
+    float offsetY = (GetScreenHeight() - (SCREENSIZEY * scale)) * 0.5f;
+
+    Vector2 realMouse = GetMousePosition();
+    io.MousePos.x = (realMouse.x - offsetX) / scale;
+    io.MousePos.y = (realMouse.y - offsetY) / scale;
+
 
     if (m_currentStatePtr) {
         m_currentStatePtr->render(*this);
@@ -17,7 +27,23 @@ void GameEngine::render() {
         renderNotification();
     }
     rlImGuiEnd();
+    EndTextureMode();
+
+    BeginDrawing();
+    ClearBackground(BLACK);
+
+    Rectangle sourceRec = { 0.0f, 0.0f, (float)m_targetTexture.texture.width, -(float)m_targetTexture.texture.height };
+    Rectangle destRec = {
+        (GetScreenWidth() - (SCREENSIZEX * scale)) * 0.5f,
+        (GetScreenHeight() - (SCREENSIZEY * scale)) * 0.5f,
+        SCREENSIZEX * scale,
+        SCREENSIZEY * scale
+    };
+
+    DrawTexturePro(m_targetTexture.texture, sourceRec, destRec, { 0, 0 }, 0.0f, WHITE);
+
     EndDrawing();
+
 }
 void GameEngine::renderNotification() {
     int fontSize = 16;
@@ -27,7 +53,7 @@ void GameEngine::renderNotification() {
     int boxWidth = textWidth + (paddingX * 2);
     int boxHeight = 45;
 
-    int boxX = (1280 - boxWidth) / 2;
+    int boxX = (SCREENSIZEX - boxWidth) / 2;
     int boxY = 25;
 
     DrawRectangle(boxX, boxY, boxWidth, boxHeight, Fade(BLACK, 0.8f));

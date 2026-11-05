@@ -264,12 +264,20 @@ struct RegionMap {
     Color color;
 };
 
+struct MapZone {
+    std::string name;
+    Rectangle bounds;
+    Color color;
+    bool isHazardous;
+};
+
 struct RegionHubG {
     std::string name;
     Realm realm;
     std::vector<NPCInfo> npcs;
     std::vector<Enemy> enemies;
     Rectangle rectangle;
+    std::vector<MapZone> zones;
 };
 
 class GameEngine {
@@ -344,6 +352,9 @@ private:
     void goToPause();
     void goToOptions();
 
+
+    const float SCREENSIZEX = 1280.0f;
+    const float SCREENSIZEY = 720.0f;
     Player m_player;
     DialogueManager m_dialogueManager;
     CombatPhase m_currentPhase = CombatPhase::ActionSelect;
@@ -373,6 +384,7 @@ private:
     std::vector<Quest> m_quests;
     int m_questLogIndex = 0;
     int m_lastPlayerLevel = 1;
+    RenderTexture2D m_targetTexture;
 };
 
 #endif

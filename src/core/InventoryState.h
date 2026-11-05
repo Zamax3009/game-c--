@@ -53,12 +53,12 @@ public:
     }
 
     void render(GameEngine& engine) override {
-        DrawRectangle(0, 0, 1280, 720, Fade(BLACK, 0.75f));
+        DrawRectangle(0, 0, engine.SCREENSIZEX, engine.SCREENSIZEY, Fade(BLACK, 0.75f));
 
         float invWidth = 600.0f;
         float invHeight = 450.0f;
-        float invX = (1280.0f - invWidth) / 2.0f;
-        float invY = (720.0f - invHeight) / 2.0f;
+        float invX = (engine.SCREENSIZEX - invWidth) / 2.0f;
+        float invY = (engine.SCREENSIZEY - invHeight) / 2.0f;
 
         DrawRectangle(invX, invY, invWidth, invHeight, DARKGRAY);
         DrawRectangleLines(invX, invY, invWidth, invHeight, WHITE);

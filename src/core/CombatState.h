@@ -129,14 +129,14 @@ public:
     }
 
     void render(GameEngine& engine) override {
-        DrawRectangle(0, 0, 1280, 720, Fade(BLACK, 0.75f));
+        DrawRectangle(0, 0, engine.SCREENSIZEX, engine.SCREENSIZEY, Fade(BLACK, 0.75f));
 
         if (!engine.m_activeEnemy) return;
 
         float arenaWidth = 700.0f;
         float arenaHeight = 450.0f;
-        float arenaX = (1280.0f - arenaWidth) / 2.0f;
-        float arenaY = (720.0f - arenaHeight) / 2.0f;
+        float arenaX = (engine.SCREENSIZEX - arenaWidth) / 2.0f;
+        float arenaY = (engine.SCREENSIZEY - arenaHeight) / 2.0f;
 
         DrawRectangle(arenaX, arenaY, arenaWidth, arenaHeight, DARKGRAY);
         DrawRectangleLinesEx({arenaX, arenaY, arenaWidth, arenaHeight}, 2, RED);

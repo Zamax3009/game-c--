@@ -39,21 +39,21 @@ public:
     }
 
     void render(GameEngine& engine) override {
-        DrawRectangle(0, 0, 1280, 720, DARKBLUE);
-        DrawText("ELEMENTAL RPG", 1280 / 2 - MeasureText("ELEMENTAL RPG", 40) / 2, 150, 40, GOLD);
+        DrawRectangle(0, 0, engine.SCREENSIZEX, engine.SCREENSIZEY, DARKBLUE);
+        DrawText("ELEMENTAL RPG", engine.SCREENSIZEX / 2 - MeasureText("ELEMENTAL RPG", 40) / 2, 150, 40, GOLD);
 
         bool saveExists = engine.doesSaveFileExist("savegame.sav");
 
         Color colorNewGame = (engine.m_menuIndex == 0) ? YELLOW : WHITE;
-        DrawText("> New Adventure", 1280 / 2 - 100, 320, 22, colorNewGame);
+        DrawText("> New Adventure", engine.SCREENSIZEX / 2 - 100, 320, 22, colorNewGame);
 
         if (saveExists) {
             Color colorLoadGame = (engine.m_menuIndex == 1) ? YELLOW : WHITE;
-            DrawText("> Load Save File", 1280 / 2 - 100, 370, 22, colorLoadGame);
+            DrawText("> Load Save File", engine.SCREENSIZEX / 2 - 100, 370, 22, colorLoadGame);
         } else {
-            DrawText(" Load Save File (no save file found)", 1280 / 2 - 100, 370, 22, GRAY);
+            DrawText(" Load Save File (no save file found)", engine.SCREENSIZEX / 2 - 100, 370, 22, GRAY);
         }
-        DrawText("Use [W/S] or [Arrow Keys] to navigate, [ENTER] to select", 1280 / 2 - 220, 550, 14, LIGHTGRAY);
+        DrawText("Use [W/S] or [Arrow Keys] to navigate, [ENTER] to select", engine.SCREENSIZEX / 2 - 220, 550, 14, LIGHTGRAY);
     }
 };
 
