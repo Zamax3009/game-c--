@@ -133,9 +133,17 @@ private:
                             else if (engine.m_selectRealm == Realm::Ignis) realName = "Ignis";
 
                             std::string dialogueFile = "assets/" + realName + "Dialogues.json";
+                            TraceLog(LOG_INFO, "Trying to load dialogue file: %s for NPC: %s", dialogueFile.c_str(), bldg.npc.c_str());
+
                             engine.m_dialogueManager.loadFromFile(dialogueFile, bldg.npc);
-                            engine.m_dialogueManager.startDialogue(1);
-                            engine.goToDialogue();
+                            engine.m_dialogueManager.startDialogue(0);
+
+                            if (engine.m_dialogueManager.isDialogueActive()) {
+                                engine.goToDialogue();
+                            } else {
+                                TraceLog(LOG_WARNING, "Failed to activate dialogue for %s", bldg.npc.c_str());
+                            }
+                            return;
                         }
                         return;
                     }

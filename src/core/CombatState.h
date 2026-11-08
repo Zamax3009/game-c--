@@ -50,21 +50,30 @@ public:
                                 }
                             }
                         }
-
                         Vector2 dropPos = engine.m_activeEnemy->getPosition();
-                        engine.m_worldItems.push_back(
-                            WorldItem(
-                                ItemID::HealthElixir, 
-                                "Health Elixir", 
-                                "Heals a small amount of damage.", 
-                                1, 
-                                dropPos, 
-                                engine.m_selectRealm, 
-                                ItemType::Heal, 
-                                35, 
-                                false
-                            )
-                        );
+                        for (auto& hub : engine.m_regionHub) {
+                            if (hub.realm == engine.m_selectRealm) {
+                                for (auto& sa : hub.areas) {
+                                    if (sa.id == hub.currenSubAreaId) {
+                                        sa.items.push_back(
+                                            WorldItem(
+                                                ItemID::HealthElixir, 
+                                                "Health Elixir", 
+                                                "Heals a small amount of damage.", 
+                                                1, 
+                                                dropPos, 
+                                                engine.m_selectRealm, 
+                                                ItemType::Heal, 
+                                                35, 
+                                                false
+                                            )
+                                        );
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
                         engine.m_currentPhase = CombatPhase::Victory;
                     } else {
                         engine.m_player.takeDamage(engine.m_activeEnemy->getAttackPower());
@@ -76,7 +85,6 @@ public:
                 }
             }
 
-            // Uso della pozione con [H] in combattimento
             if (IsKeyPressed(KEY_H)) {
                 bool itemUsed = false;
                 for (size_t i = 0; i < engine.m_inventory.size(); i++) {
@@ -105,7 +113,6 @@ public:
                 }
             }
 
-            // Fuga dal combattimento con [R]
             if (IsKeyPressed(KEY_R)) {
                 engine.m_activeEnemy = nullptr;
                 engine.goToRegionHub();

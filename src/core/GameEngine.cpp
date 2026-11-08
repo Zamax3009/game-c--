@@ -308,8 +308,16 @@ GameEngine::GameEngine() {
                 {"Aer Wizard", "Wise old Wizard, keeper of secrets", "assets/AerDialogues.json", "aer_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
             },
             {
-                { AreaID::Village, "Aer Village", {0, 100, 1280, 620}, {}, {}, BLUE },
-                { AreaID::Capital, "Aer Citadel", {0, 100, 1280, 620}, {Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED), Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE) }, {}, DARKGRAY}
+                { AreaID::Village, "Aer Village", {0, 100, 1280, 620}, {}, {
+                    WorldItem(ItemID::ManaPotion, "Mana Potion", "Restores a small amount of mana.", 1, {250.0f, 300.0f}, Realm::Aer, ItemType::RestoreMana, 35, false)
+                }, BLUE },
+                
+                { AreaID::Capital, "Aer Citadel", {0, 100, 1280, 620}, {
+                    Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED), 
+                    Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE) 
+                }, {
+                    WorldItem(ItemID::HealthElixir, "Health Elixir", "Heals a small amount of damage.", 1, {850.0f, 350.0f}, Realm::Aer, ItemType::Heal, 35, false)
+                }, DARKGRAY}
             },
             AreaID::Village
         },
