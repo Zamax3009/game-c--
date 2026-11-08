@@ -46,6 +46,16 @@ public:
             return;
         }
 
+        if (IsKeyPressed(KEY_I)) {
+            engine.goToInventory();
+            return;
+        }
+
+        if (IsKeyPressed(KEY_J)) {
+            engine.goToQuestLog();
+            return;
+        }
+
         if (!engine.m_isMapWindowOpen) {
             updateActiveHub(engine, currentHub);
         } else {
@@ -173,6 +183,39 @@ private:
         case AreaID::Capital:
             if (playerPos.x < currentSubArea->bounds.x + 20.0f) {
                 currentHub->currenSubAreaId = AreaID::Village;
+                engine.m_player.setPosition({ currentSubArea->bounds.x + currentSubArea->bounds.width - 40.0f, playerPos.y });
+            } else if (playerPos.x > currentSubArea->bounds.x + currentSubArea->bounds.width - 20) {
+                currentHub->currenSubAreaId = AreaID::ScorchedSteppes;
+                engine.m_player.setPosition({ currentSubArea->bounds.x + 40.0f, playerPos.y });
+                engine.showNotification("Challenge Started: Clear the Scoarched Steppes!");
+            }
+            break;
+        case AreaID::ScorchedSteppes: {
+            bool allEnemiesDefeated = true;
+            for (const auto& enemy : currentSubArea->enemies) {
+                if (!enemy.isDefeated()) {
+                    allEnemiesDefeated = false;
+                    break;
+                }
+            }
+            if (playerPos.x < currentSubArea->bounds.x + 20.0f) {
+                currentHub->currenSubAreaId = AreaID::Capital;
+                engine.m_player.setPosition({ currentSubArea->bounds.x + currentSubArea->bounds.width - 40.0f, playerPos.y });
+            } else if (playerPos.x > currentSubArea->bounds.x + currentSubArea->bounds.width - 20.0f) {
+                if (allEnemiesDefeated) {
+                    currentHub->currenSubAreaId = AreaID::AncientTitanForge;
+                    engine.m_player.setPosition({ currentSubArea->bounds.x + 40.0f, playerPos.y });
+                    engine.showNotification("The path to the Ancient Titan Forge is open!");
+                } else {
+                    engine.m_player.setPosition({ currentSubArea->bounds.x + currentSubArea->bounds.width - 40.0f, playerPos.y });
+                    engine.showNotification("Defeat all enemies in the arena first!");
+                }
+            }
+            break;
+        }
+        case AreaID::AncientTitanForge:
+            if (playerPos.x < currentSubArea->bounds.x + 20.0f) {
+                currentHub->currenSubAreaId = AreaID::ScorchedSteppes;
                 engine.m_player.setPosition({ currentSubArea->bounds.x + currentSubArea->bounds.width - 40.0f, playerPos.y });
             }
             break;
@@ -304,7 +347,38 @@ private:
                 }
             }
         }
+
+        float rightEdge = currentSubArea->bounds.x + currentSubArea->bounds.width;
+        float leftEdge = currentSubArea->bounds.x;
+        float centerY = currentSubArea->bounds.y + (currentSubArea->bounds.height / 2.0f);
         
+        if (currentSubArea->id == AreaID::Village) {
+            DrawText("-> Capital", rightEdge - 110, centerY - 10, 14, RAYWHITE);
+        }
+        else if (currentSubArea->id == AreaID::Capital) {
+            DrawText("<- Village", leftEdge + 40, centerY - 10, 14, RAYWHITE);
+
+            DrawText("-> Scorched Steppes (Arena)", rightEdge - 210, centerY - 10, 14, RAYWHITE);
+        }
+        else if (currentSubArea->id == AreaID::ScorchedSteppes) {
+            DrawText("<- Capital", leftEdge + 40, centerY - 10, 14, RAYWHITE);
+
+            bool allCleared = true;
+            for (const auto& enemy : currentSubArea->enemies) {
+                if (!enemy.isDefeated()) {
+                    allCleared = false;
+                    break;
+                }
+            }
+
+            Color forgeColor = allCleared ? GOLD : RED;
+            std::string forgeText = allCleared ? "-> Ancient Titan Forge [OPEN]" : "-> Forge [LOCKED: Clear Arena]";
+            DrawText(forgeText.c_str(), rightEdge - (allCleared ? 230 : 250), centerY - 10, 14, forgeColor);
+        }
+        else if (currentSubArea->id == AreaID::AncientTitanForge) {
+            DrawText("<- Scorched Steppes", leftEdge + 40, centerY - 10, 14, RAYWHITE);
+        }
+
         DrawRectangleRec({playerPos.x, playerPos.y, 10.0f, 15.0f}, YELLOW);
     }
 

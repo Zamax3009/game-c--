@@ -304,58 +304,45 @@ GameEngine::GameEngine() {
     m_regionHub = {
         {
             "Aer", Realm::Aer, {
-                {"Gwen", "Tavern owner", "assets/AerDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 350.0f}, BROWN}},
-                {"Aer Wizard", "Wise old Wizard, keeper of secrets", "assets/AerDialogues.json", "aer_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
+                {}
             },
             {
-                { AreaID::Village, "Aer Village", {0, 100, 1280, 620}, {}, {
-                    WorldItem(ItemID::ManaPotion, "Mana Potion", "Restores a small amount of mana.", 1, {250.0f, 300.0f}, Realm::Aer, ItemType::RestoreMana, 35, false)
-                }, BLUE },
-                
-                { AreaID::Capital, "Aer Citadel", {0, 100, 1280, 620}, {
-                    Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED), 
-                    Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE) 
-                }, {
-                    WorldItem(ItemID::HealthElixir, "Health Elixir", "Heals a small amount of damage.", 1, {850.0f, 350.0f}, Realm::Aer, ItemType::Heal, 35, false)
-                }, DARKGRAY}
+                { AreaID::Village, "Aer Village", {0, 100, 1280, 620}, {}, {}, BLUE }
             },
             AreaID::Village
         },
         {
             "Aqua", Realm::Aqua, {
-                {"Gwen", "Tavern owner", "assets/AquaDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 350.0f}, BROWN}},
-                {"Aqua Wizard", "Wise old Wizard, keeper of secrets", "assets/AquaDialogues.json", "aqua_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
+                {}
             },
             {
-                { AreaID::Village, "Aqua Village", {0, 100, 1280, 620}, {}, {}, BLUE },
-                { AreaID::Capital, "Aqua Citadel", {0, 100, 1280, 620}, {Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED), Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE) }, {}, DARKGRAY}
+                { AreaID::Village, "Aqua Village", {0, 100, 1280, 620}, {}, {}, BLUE }
             },
             AreaID::Village
         },
         {
-            "Aer", Realm::Terra, {
-                {"Gwen", "Tavern owner", "assets/TerraDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 350.0f}, BROWN}},
-                {"Terra Wizard", "Wise old Wizard, keeper of secrets", "assets/TerraDialogues.json", "terra_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
+            "Terra", Realm::Terra, {
+                {}
             },
             {
-                { AreaID::Village, "Terra Village", {0, 100, 1280, 620}, {}, {}, BLUE },
-                { AreaID::Capital, "Terra Citadel", {0, 100, 1280, 620}, {Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED), Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE) }, {}, DARKGRAY}
+                { AreaID::Village, "Terra Village", {0, 100, 1280, 620}, {}, {}, BLUE }
             },
             AreaID::Village
         },
         {
             "Ignis", Realm::Ignis, {
                 {"Gwen", "Tavern owner", "assets/IgnisDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 350.0f}, BROWN}},
-                {"Aer Wizard", "Wise old Wizard, keeper of secrets", "assets/IgnisDialogues.json", "ignis_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
+                {"Ignis Wizard", "Wise old Wizard, keeper of secrets", "assets/IgnisDialogues.json", "ignis_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
             },
             {
                 { AreaID::Village, "Ignis Village", {0, 100, 1280, 620}, {}, {}, BLUE },
-                { AreaID::Capital, "Ignis Citadel", {0, 100, 1280, 620}, {Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED), Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE) }, {}, DARKGRAY}
+                { AreaID::Capital, "Ignis Citadel", {0, 100, 1280, 620}, {Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE)}, {}, DARKGRAY },
+                { AreaID::ScorchedSteppes, "Scorched Steppes", {0, 100, 1280, 620}, {Enemy("Magma Goblin", 3, 40, 15, {400.0f, 300.0f}, {20.0f, 20.0f}, ORANGE), Enemy("Magma Goblin", 3, 40, 15, {500.0f, 300.0f}, {20.0f, 20.0f}, ORANGE)}, {}, MAROON },
+                { AreaID::AncientTitanForge, "Ancient Titan Forge", {0, 100, 1280, 620}, {Enemy("Titan Golem", 5, 100, 25, {640.0f, 350.0f}, {40.0f, 40.0f}, GOLD)}, {WorldItem(ItemID::ElementalCrystal, "Titan Core", "A glowing relic from the forge.", 1, {640.0f, 250.0f}, Realm::Ignis, ItemType::None, 0, false)}, BLACK}
             },
             AreaID::Village
         }
     };
-
     m_buildings = {
         {Realm::Aer, {
             {AreaID::Capital, "gwen", "Tavern", {50, 200, 150, 250}, DARKBROWN, {51, 201, 148, 248}, BEIGE, {110, 440, 30, 20}, BROWN},

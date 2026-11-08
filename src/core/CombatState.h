@@ -57,14 +57,14 @@ public:
                                     if (sa.id == hub.currenSubAreaId) {
                                         sa.items.push_back(
                                             WorldItem(
-                                                ItemID::HealthElixir, 
-                                                "Health Elixir", 
-                                                "Heals a small amount of damage.", 
+                                                ItemID::ManaPotion, 
+                                                "Mana Potion", 
+                                                "Restores a small amount of mana.", 
                                                 1, 
                                                 dropPos, 
                                                 engine.m_selectRealm, 
-                                                ItemType::Heal, 
-                                                35, 
+                                                ItemType::RestoreMana, 
+                                                25, 
                                                 false
                                             )
                                         );
