@@ -458,25 +458,73 @@ bool GameEngine::checkWallCollision(const Rectangle& rec) {
     return false;
 }
 void GameEngine::playerMovement(float velocity) {
-    Vector2 playerPos = m_player.getPosition();
-    Vector2 movement = { 0.0f, 0.0f };
+    float dt = GetFrameTime();
+    Vector2 dir = { 0.0f, 0.0f };
+    
+    if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) dir.y -= 1.0f;
+    if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) dir.y += 1.0f;
+    if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) dir.x -= 1.0f;
+    if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) dir.x += 1.0f;
 
-    if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP)) movement.y -= 1.0f;
-    if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN)) movement.y += 1.0f;
-    if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) movement.x -= 1.0f;
-    if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) movement.x += 1.0f;
-
-    float boxWidth = 10.0f;
-    float boxHeight = 15.0f;
-
-    Rectangle nextRectX = { playerPos.x + (movement.x * velocity), playerPos.y, boxWidth, boxHeight };
-    if (movement.x != 0.0f && !checkWallCollision(nextRectX)) {
-        m_player.move({ movement.x * velocity, 0.0f });
+    if (Vector2Length(dir) > 0.0f) {
+        dir = Vector2Normalize(dir);
+        m_player.setLastDirection(dir);
     }
 
-    Rectangle nextRectY = { playerPos.x, playerPos.y + (movement.y * velocity), boxWidth, boxHeight };
-    if (movement.y != 0.0f && !checkWallCollision(nextRectY)) {
-        m_player.move({ 0.0f, movement.y * velocity });
+    if ((IsKeyPressed(KEY_LEFT_SHIFT) || IsKeyPressed(KEY_SPACE)) && !m_player.getIsDashing() && m_player.getStamina() >= m_player.getDashCost()) {
+        m_player.setIsDashing(true);
+        m_player.setDashTimer(m_player.getDashDuration());
+        m_player.setStamina(m_player.getStamina() - m_player.getDashCost());
+        
+        m_player.setStaminaVisibilityTimer(1.0f);
+    }
+
+    if (m_player.getIsDashing()) {
+        m_player.setDashTimer(m_player.getDashTimer() - dt);
+        
+        Vector2 lastDir = m_player.getLastDirection();
+        float dashSpd = m_player.getDashSpeed();
+        
+        Vector2 nextStep = { lastDir.x * dashSpd, lastDir.y * dashSpd };
+        Rectangle nextRect = { m_player.getPosition().x + nextStep.x, m_player.getPosition().y + nextStep.y, 10.0f, 15.0f };
+        
+        if (!checkWallCollision(nextRect)) {
+            m_player.move(nextStep);
+        }
+
+        if (m_player.getDashTimer() <= 0.0f) {
+            m_player.setIsDashing(false);
+        }
+    } else {
+        Vector2 movement = { dir.x * velocity, dir.y * velocity };
+        Vector2 playerPos = m_player.getPosition();
+        
+        Rectangle nextRectX = { playerPos.x + movement.x, playerPos.y, 10.0f, 15.0f };
+        if (movement.x != 0.0f && !checkWallCollision(nextRectX)) {
+            m_player.move({ movement.x, 0.0f });
+        }
+
+        playerPos = m_player.getPosition();
+        Rectangle nextRectY = { playerPos.x, playerPos.y + movement.y, 10.0f, 15.0f };
+        if (movement.y != 0.0f && !checkWallCollision(nextRectY)) {
+            m_player.move({ 0.0f, movement.y });
+        }
+
+        float currentStamina = m_player.getStamina();
+        float maxStamina = m_player.getMaxStamina();
+
+        if (currentStamina < maxStamina) {
+            float newStamina = currentStamina + (m_player.getStaminaRegenRate() * dt);
+            if (newStamina > maxStamina) newStamina = maxStamina;
+            m_player.setStamina(newStamina);
+            
+            m_player.setStaminaVisibilityTimer(1.0f);
+        } else {
+            float timer = m_player.getStaminaVisibilityTimer();
+            if (timer > 0.0f) {
+                m_player.setStaminaVisibilityTimer(timer - dt);
+            }
+        }
     }
 }
 
@@ -497,6 +545,110 @@ int GameEngine::getSelectedAttack() {
     }
 
     return -1;
+}
+
+void GameEngine::updateRealtimeCombat(SubArea* currentSubArea) {
+    float dt = GetFrameTime();
+
+    if (m_player.getCooldownTimer() > 0.0f) {
+        m_player.setCooldownTimer(m_player.getCooldownTimer() - dt);
+    }
+
+    if (m_player.getIsAttacking()) {
+        m_player.setAttackTimer(m_player.getAttackTimer() - dt);
+        if (m_player.getAttackTimer() <= 0.0f) {
+            m_player.setIsAttacking(false);
+        }
+    }
+
+    if ((IsKeyPressed(KEY_K) || IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) && m_player.canAttack()) {
+        m_player.setIsAttacking(true);
+        m_player.setAttackTimer(0.15f);
+        m_player.setCooldownTimer(0.35f);
+
+        Rectangle attackBox = m_player.getAttackHitbox();
+
+        if (currentSubArea) {
+            for (auto& enemy : currentSubArea->enemies) {
+                if (!enemy.isDefeated()) {
+                    Rectangle enemyBox = enemy.getCollisionBox();
+                    if (CheckCollisionRecs(attackBox, enemyBox)) {
+                        enemy.takeDamage(m_player.getAttackDamage());
+                        int dmg = m_player.getAttackDamage();
+                        showFloatingText("-" + std::to_string(dmg), enemy.getPosition(), RED);
+                        
+                        TraceLog(LOG_INFO, "Hit %s for %d damage!", enemy.getName().c_str(), m_player.getAttackDamage());
+
+                        if (enemy.getHealth() <= 0) {
+                            enemy.setDefeated(true);
+                            
+                            int lootGold = 25;
+                            m_player.addGold(lootGold);
+
+                            int xpReward = enemy.getLevel() * 40;
+                            m_player.addXP(xpReward);
+
+                            if (enemy.getName() == "Magma Goblin" || enemy.getName() == "Goblin") {
+                                for (auto& quest : m_quests) {
+                                    if (quest.id == QuestID::GoblinHunt && quest.isAccepted && !quest.isCompleted) {
+                                        quest.currentProgress++;
+                                        if (quest.currentProgress >= quest.targetProgress) {
+                                            completeQuest(quest);
+                                        }
+                                    }
+                                }
+                            }
+
+                            Vector2 dropPos = enemy.getPosition();
+                            currentSubArea->items.push_back(
+                                WorldItem(
+                                    ItemID::ManaPotion, 
+                                    "Mana Potion", 
+                                    "Restores a small amount of mana.", 
+                                    1, 
+                                    dropPos, 
+                                    m_selectRealm, 
+                                    ItemType::RestoreMana, 
+                                    25, 
+                                    false
+                                )
+                            );
+
+                            showNotification("Enemy defeated! +25 Gold, +" + std::to_string(xpReward) + " XP");
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void GameEngine::useHotbarItem(ItemType type) {
+    bool itemUsed = false;
+    for (size_t i = 0; i < m_inventory.size(); i++) {
+        auto& item = m_inventory[i];
+        if (item.type == type && item.quantity > 0) {
+            if (type == ItemType::Heal) {
+                m_player.heal(item.attribute);
+                showNotification("Used " + item.name + " (+" + std::to_string(item.attribute) + " HP)");
+            } else if (type == ItemType::RestoreMana) {
+                m_player.addMana(item.attribute);
+                showNotification("Used " + item.name + " (+" + std::to_string(item.attribute) + " Mana)");
+            }
+
+            m_inventory.removeItem(i, 1);
+            
+            itemUsed = true;
+            break;
+        }
+    }
+    if (!itemUsed) {
+        showNotification("No items available!");
+    }
+}
+
+void GameEngine::showFloatingText(const std::string text, Vector2 pos, Color color) {
+    m_floatingTexts.push_back({ text, pos, color, 1.0f });
 }
 
 DialogueManager::DialogueManager() {}

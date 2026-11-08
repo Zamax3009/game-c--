@@ -87,14 +87,15 @@ public:
 
             if (IsKeyPressed(KEY_H)) {
                 bool itemUsed = false;
-                for (size_t i = 0; i < engine.m_inventory.size(); i++) {
-                    auto& item = engine.m_inventory[i];
+                auto& items = engine.m_inventory.getItems();
+                for (size_t i = 0; i < items.size(); i++) {
+                    auto& item = items[i];
                     if (item.type == ItemType::Heal && item.quantity > 0) {
                         engine.m_player.heal(item.attribute);
                         item.quantity--;
 
                         if (item.quantity <= 0) {
-                            engine.m_inventory.removeItem(i);
+                            engine.m_inventory.removeItem(i, 1);
                         }
 
                         itemUsed = true;
@@ -125,7 +126,7 @@ public:
                 engine.goToRegionHub();
             }
         }
-        else { // Defeat
+        else {
             if (IsKeyPressed(KEY_ENTER)) {
                 engine.m_activeEnemy = nullptr;
                 engine.m_player.resetHP();

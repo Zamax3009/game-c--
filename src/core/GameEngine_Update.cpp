@@ -1,8 +1,5 @@
 #include "GameEngine.h"
 #include "raylib.h"
-#include "raymath.h"
-#include "imgui.h"
-#include "rlImGui.h"
 
 void GameEngine::update() {
 
@@ -20,6 +17,17 @@ void GameEngine::update() {
         m_notificationTime -= GetFrameTime();
     }
 
+    float dt = GetFrameTime();
+    for (auto it = m_floatingTexts.begin(); it != m_floatingTexts.end(); ) {
+        it->lifeTimer -= dt;
+        it->position.y -= 25.0f * dt;
+        if (it->lifeTimer <= 0.0f) {
+            it = m_floatingTexts.erase(it);
+        } else {
+            it++;
+        }
+    }
+    
     if (m_currentStatePtr) {
         m_currentStatePtr->update(*this);
     }

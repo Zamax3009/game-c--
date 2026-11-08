@@ -75,6 +75,7 @@ public:
 
         BeginMode2D(engine.m_camera);
         renderRegionContent(engine, currentHub);
+        renderStaminaBar(engine);
         EndMode2D();
 
         if (engine.m_isMapWindowOpen) {
@@ -82,6 +83,7 @@ public:
         } else {
             renderMinimapContent(engine, currentHub);
             renderHubControlsContent(engine);
+            renderHotbar(engine);
         }
     }
 
@@ -100,6 +102,8 @@ private:
 
         engine.updateCamera(currentSubArea);
 
+        engine.updateRealtimeCombat(currentSubArea);
+
         Vector2 playerPos = engine.m_player.getPosition();
 
         std::vector<WallCollider> allWalls;
@@ -113,19 +117,8 @@ private:
                 }
             }
         }
-
         for (auto& enemy : currentSubArea->enemies) {
-            enemy.updateAI(playerPos, allWalls, currentSubArea->bounds);
-        }
-
-        if (IsKeyPressed(KEY_SPACE)) {
-            for (auto& enemy : currentSubArea->enemies) {
-                if (!enemy.isDefeated() && CheckCollisionPointRec(playerPos, enemy.getCollisionBox())) {
-                    engine.m_activeEnemy = &enemy;
-                    engine.goToCombat();
-                    return;
-                }
-            }
+            enemy.updateAI(playerPos, allWalls, currentSubArea->bounds, engine.m_player);
         }
 
         if (IsKeyPressed(KEY_F)) {
@@ -143,15 +136,11 @@ private:
                             else if (engine.m_selectRealm == Realm::Ignis) realName = "Ignis";
 
                             std::string dialogueFile = "assets/" + realName + "Dialogues.json";
-                            TraceLog(LOG_INFO, "Trying to load dialogue file: %s for NPC: %s", dialogueFile.c_str(), bldg.npc.c_str());
-
                             engine.m_dialogueManager.loadFromFile(dialogueFile, bldg.npc);
                             engine.m_dialogueManager.startDialogue(0);
 
                             if (engine.m_dialogueManager.isDialogueActive()) {
                                 engine.goToDialogue();
-                            } else {
-                                TraceLog(LOG_WARNING, "Failed to activate dialogue for %s", bldg.npc.c_str());
                             }
                             return;
                         }
@@ -187,7 +176,7 @@ private:
             } else if (playerPos.x > currentSubArea->bounds.x + currentSubArea->bounds.width - 20) {
                 currentHub->currenSubAreaId = AreaID::ScorchedSteppes;
                 engine.m_player.setPosition({ currentSubArea->bounds.x + 40.0f, playerPos.y });
-                engine.showNotification("Challenge Started: Clear the Scoarched Steppes!");
+                engine.showNotification("Challenge Started: Clear the Scorched Steppes!");
             }
             break;
         case AreaID::ScorchedSteppes: {
@@ -221,6 +210,13 @@ private:
             break;
         default:
             break;
+        }
+
+        if (IsKeyPressed(KEY_ONE) || IsKeyPressed(KEY_KP_1)) {
+            engine.useHotbarItem(ItemType::Heal);
+        }
+        if (IsKeyPressed(KEY_TWO) || IsKeyPressed(KEY_KP_2)) {
+            engine.useHotbarItem(ItemType::RestoreMana);
         }
     }
 
@@ -343,7 +339,7 @@ private:
                 DrawRectangleLinesEx(enemyRec, 1, RED);
                 DrawText(enemy.getName().c_str(), enemy.getPosition().x - (MeasureText(enemy.getName().c_str(), 10) / 2), enemyRec.y - 15, 10, WHITE);
                 if (CheckCollisionPointRec(playerPos, enemyRec)) {
-                    DrawText("Press [SPACE] to fight", enemy.getPosition().x - 55, enemyRec.y - 30, 10, RED);
+                    DrawText("Press [K] to fight", enemy.getPosition().x - 55, enemyRec.y - 30, 10, RED);
                 }
             }
         }
@@ -380,6 +376,17 @@ private:
         }
 
         DrawRectangleRec({playerPos.x, playerPos.y, 10.0f, 15.0f}, YELLOW);
+
+        if (engine.m_player.getIsAttacking()) {
+            Rectangle attackBox = engine.m_player.getAttackHitbox();
+            DrawRectangleRec(attackBox, Fade(YELLOW, 0.5f));
+            DrawRectangleLinesEx(attackBox, 1, RED);
+        }
+
+        for (const auto& ft : engine.m_floatingTexts) {
+            Color fadeColor = Fade(ft.color, ft.lifeTimer); 
+            DrawText(ft.text.c_str(), ft.position.x - 10, ft.position.y - 20, 16, fadeColor);
+        }
     }
 
     void renderMinimapContent(GameEngine& engine, RegionHubG* currentHub) {
@@ -474,6 +481,59 @@ private:
                 DrawText(region.name.c_str(), x + 15, y + 20, 18, isSelected ? BLACK : DARKGRAY);
                 if (isSelected) DrawText("[ SELECTED ]", x + 15, y + 80, 14, RED);
             }
+        }
+    }
+    void renderStaminaBar(GameEngine& engine) {
+        float visibilityTimer = engine.m_player.getStaminaVisibilityTimer();
+        if (visibilityTimer <= 0.0f) return;
+
+        Vector2 playerPos = engine.m_player.getPosition();
+        
+        float barWidth = 30.0f;
+        float barHeight = 4.0f;
+        float barX = playerPos.x + (10.0f / 2.0f) - (barWidth / 2.0f);
+        float barY = playerPos.y - 10.0f;
+
+        float staminaPct = engine.m_player.getStamina() / engine.m_player.getMaxStamina();
+        
+        float alpha = (visibilityTimer < 0.3f) ? (visibilityTimer / 0.3f) : 1.0f;
+
+        DrawRectangle(barX, barY, barWidth, barHeight, Fade(BLACK, 0.6f * alpha));
+        DrawRectangle(barX, barY, barWidth * staminaPct, barHeight, Fade(GREEN, alpha));
+        DrawRectangleLinesEx({ barX, barY, barWidth, barHeight }, 1, Fade(DARKGREEN, alpha));
+    }
+    void renderHotbar(GameEngine& engine) {
+        float slotSize = 44.0f;
+        float spacing = 10.0f;
+        int totalSlots = 2;
+        float barWidth = (totalSlots * slotSize) + ((totalSlots - 1) * spacing);
+        
+        float startX = (engine.SCREENSIZEX - barWidth) / 2.0f;
+        float startY = engine.SCREENSIZEY - 95.0f;
+
+        int healthPotionQty = 0;
+        int manaPotionQty = 0;
+
+        for (const auto& item : engine.m_inventory.getItems()) {
+            if (item.type == ItemType::Heal) healthPotionQty += item.quantity;
+            if (item.type == ItemType::RestoreMana) manaPotionQty += item.quantity;
+        }
+
+        DrawRectangle(startX, startY, slotSize, slotSize, Fade(BLACK, 0.75f));
+        DrawRectangleLinesEx({startX, startY, slotSize, slotSize}, 2, healthPotionQty > 0 ? RED : DARKGRAY);
+        DrawText("[1]", startX + 4, startY + 4, 10, LIGHTGRAY);
+        DrawText("HP", startX + 13, startY + 16, 14, RED);
+        if (healthPotionQty > 0) {
+            DrawText(std::to_string(healthPotionQty).c_str(), startX + slotSize - 14, startY + slotSize - 16, 12, WHITE);
+        }
+
+        float slot2X = startX + slotSize + spacing;
+        DrawRectangle(slot2X, startY, slotSize, slotSize, Fade(BLACK, 0.75f));
+        DrawRectangleLinesEx({slot2X, startY, slotSize, slotSize}, 2, manaPotionQty > 0 ? BLUE : DARKGRAY);
+        DrawText("[2]", slot2X + 4, startY + 4, 10, LIGHTGRAY);
+        DrawText("MP", slot2X + 11, startY + 16, 14, BLUE);
+        if (manaPotionQty > 0) {
+            DrawText(std::to_string(manaPotionQty).c_str(), slot2X + slotSize - 14, startY + slotSize - 16, 12, WHITE);
         }
     }
 };

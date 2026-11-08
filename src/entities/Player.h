@@ -84,7 +84,7 @@ public:
         return true;
     }
 
-    const std::vector<Item>& getItems() const { return m_items; }
+    std::vector<Item>& getItems() { return m_items; }
     std::vector<Item> getItemsNonConst() { return m_items; }
     bool isEmpty() const { return m_items.empty(); }
     int getIndex() const { return m_selectedIndex; }
@@ -126,6 +126,36 @@ public:
     int getLevel() const { return m_level; }
     int getXP() const { return m_xp; }
     int getXPToNextLevel() const { return m_xpToNextLevel; }
+    float getStamina() const { return m_stamina; }
+    float getMaxStamina() const { return m_maxStamina; }
+    float getStaminaRegenRate() const { return m_staminaRegenRate; }
+    Vector2 getLastDirection() const { return m_lastDirection; }
+    bool getIsDashing() const { return m_isDashing; }
+    float getDashTimer() const { return m_dashTimer; }
+    float getDashDuration() const { return m_dashDuration; }
+    float getDashSpeed() const { return m_dashSpeed; }
+    float getDashCost() const { return m_dashCost; }
+    float getStaminaVisibilityTimer() const { return m_staminaVisibilityTimer; }
+    bool getIsAttacking() const { return m_isAttacking; }
+    float getAttackTimer() const { return m_attackTimer; }
+    int getAttackDamage() const { return m_attackDamage; }
+    bool canAttack() const { return m_cooldownTimer <= 0.0f; }
+
+    Rectangle getAttackHitbox() const {
+    float reach = 25.0f;
+    float width = 30.0f;
+    
+    Vector2 pos = m_position; 
+    float attackX = pos.x + (m_lastDirection.x * reach);
+    float attackY = pos.y + (m_lastDirection.y * reach);
+
+    if (std::abs(m_lastDirection.x) > std::abs(m_lastDirection.y)) {
+        return { attackX - 5.0f, attackY - (width / 2.0f), reach + 10.0f, width };
+    }
+    else {
+        return { attackX - (width / 2.0f), attackY - 5.0f, width, reach + 10.0f };
+    }
+}
 
     // SETTERS
     // Resource management
@@ -160,7 +190,7 @@ public:
         if (m_mana < 0) m_mana = 0;
     }
     void setMaxMana(int amount) { m_maxMana = amount; }
-    void resetMana(int amount) { m_mana = m_maxMana; }
+    void resetMana() { m_mana = m_maxMana; }
     void resetToDefault();
     void addXP(int amount) {
         m_xp += amount;
@@ -180,8 +210,22 @@ public:
     void setXP(int amount) { m_xp = amount; }
     void modifyReputation(Realm realm, int amount);
     void modifyMastery(Realm realm, int amount);
-
     const std::vector<Attack>& getAttacks() const { return m_attacks; }
+    void setStamina(float stamina) { m_stamina = stamina; }
+    void setMaxStamina(float maxStamina) { m_maxStamina = maxStamina; }
+    void setStaminaRegenRate(float rate) { m_staminaRegenRate = rate; }
+    void setLastDirection(Vector2 direction) { m_lastDirection = direction; }
+    void setIsDashing(bool isDashing) { m_isDashing = isDashing; }
+    void setDashTimer(float dashTimer) { m_dashTimer = dashTimer; }
+    void setDashDuration(float dashDuration) { m_dashDuration = dashDuration; }
+    void setDashSpeed(float dashSpeed) { m_dashSpeed = dashSpeed; }
+    void setDashCost(float dashCost) { m_dashCost = dashCost; }
+    void setStaminaVisibilityTimer(float timer) { m_staminaVisibilityTimer = timer; }
+    void setIsAttacking(bool attacking) { m_isAttacking = attacking; }
+    void setAttackTimer(float timer) { m_attackTimer = timer; }
+    void setCooldownTimer(float timer) { m_cooldownTimer = timer; }
+    float getCooldownTimer() const { return m_cooldownTimer; }
+    void setAttackDamage(int dmg) { m_attackDamage = dmg; }
 
 private:
     int m_hp = 100;
@@ -197,6 +241,23 @@ private:
     int m_level = 1;
     int m_xp = 0;
     int m_xpToNextLevel = 100;
+    float m_stamina = 100.0f;
+    float m_maxStamina = 100.0f;
+    float m_staminaRegenRate = 25.0f;
+    float m_staminaVisibilityTimer = 0.0f;
+
+    Vector2 m_lastDirection = { 1.0f, 0.0f };
+    bool m_isDashing = false;
+    float m_dashTimer = 0.0f;
+    float m_dashDuration = 0.15f;
+    float m_dashSpeed = 12.0f;
+    float m_dashCost = 25.0f;
+    bool m_isAttacking = false;
+    float m_attackTimer = 0.0f;
+    float m_attackDuration = 0.15f;
+    float m_attackCooldown = 0.35f;
+    float m_cooldownTimer = 0.0f;
+    int m_attackDamage = 25;
 };
 
 #endif

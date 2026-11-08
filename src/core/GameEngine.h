@@ -49,6 +49,7 @@ private:
     bool m_isDefeated;
     float m_speed = 1.2f;
     bool m_isReturning = false;
+    float m_attackCooldown = 0.0f;
 
 public:
     Enemy(std::string name, int level, int hp, int attack, Vector2 pos, Rectangle box, Color col)
@@ -58,6 +59,7 @@ public:
         float h = (box.height > 0.0f) ? box.height : (box.y > 0.0f ? box.y : 20.0f);
         m_collisionBox = { pos.x - (w / 2.0f), pos.y - (h / 2.0f), w, h };
     }
+
     std::string getName() const { return m_name; }
     int getLevel() const { return m_level; }
     int getHealth() const { return m_health; }
@@ -67,6 +69,7 @@ public:
     Rectangle getCollisionBox() const { return m_collisionBox; }
     Color getColor() const { return m_color; }
     bool isDefeated() const { return m_isDefeated; }
+    void useHotbarItem(ItemType type);
 
     void takeDamage(int amount) {
         m_health -= amount;
@@ -75,8 +78,21 @@ public:
     void setHealth(int hp) { m_health = hp; }
     void setDefeated(bool defeated) { m_isDefeated = defeated; }
 
-    void updateAI(Vector2 playerPos, const std::vector<WallCollider>& walls, Rectangle hubBounds) {
+    void updateAI(Vector2 playerPos, const std::vector<WallCollider>& walls, Rectangle hubBounds, Player player) {
         if (m_isDefeated) return;
+
+        float dt = GetFrameTime();
+        if (m_attackCooldown > 0.0f) {
+            m_attackCooldown -= dt;
+        }
+
+        Rectangle playerBox = { playerPos.x, playerPos.y, 10.0f, 15.0f };
+        if (CheckCollisionRecs(m_collisionBox, playerBox)) {
+            if (m_attackCooldown <= 0.0f) {
+                player.takeDamage(m_attackPower);
+                m_attackCooldown = 1.0f;
+            }
+        }
         
         float distToPlayer = Vector2Distance(m_position, playerPos);
         float distToSpawn = Vector2Distance(m_position, m_spawnPosition);
@@ -185,6 +201,13 @@ public:
     bool isCollected() const { return m_isCollected; }
 
     void setCollected(bool collected) { m_isCollected = collected; }
+};
+
+struct FloatingText {
+    std::string text;
+    Vector2 position;
+    Color color;
+    float lifeTimer;
 };
 
 struct Buildings {
@@ -313,6 +336,8 @@ private:
     void update();
     void render();
     
+    void updateRealtimeCombat(SubArea* currentSubArea);
+
     int getSelectedAttack();
     bool checkWallCollision(const Rectangle& rec);
     void playerMovement(float velocity);
@@ -337,6 +362,9 @@ private:
     }
 
     void renderNotification();
+    void useHotbarItem(ItemType type);
+
+    void showFloatingText(const std::string text, Vector2 pos, Color color);
 
     // State Pattern
     std::unique_ptr<GameState> m_currentStatePtr;
@@ -397,6 +425,8 @@ private:
     int m_lastPlayerLevel = 1;
     RenderTexture2D m_targetTexture;
     bool m_exitGame = false;
+    std::vector<FloatingText> m_floatingTexts;
+    
 };
 
 #endif
