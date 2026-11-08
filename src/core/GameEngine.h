@@ -10,6 +10,15 @@
 #include "../entities/Player.h"
 #include "../dialogue/DialogueManager.h"
 
+enum class AreaID {
+    None = 0,
+    Village,
+    Capital,
+    ScorchedSteppes,
+    AncientTitanForge,
+    MountPyroclast
+};
+
 enum class QuestID {
     None = 0,
     GoblinHunt,
@@ -179,6 +188,7 @@ public:
 };
 
 struct Buildings {
+    AreaID areaID;
     std::string npc;
     std::string name;
     Rectangle building;
@@ -264,20 +274,21 @@ struct RegionMap {
     Color color;
 };
 
-struct MapZone {
+struct SubArea {
+    AreaID id;
     std::string name;
     Rectangle bounds;
-    Color color;
-    bool isHazardous;
+    std::vector<Enemy> enemies;
+    std::vector<WorldItem> items;
+    Color backgroundColor;
 };
 
 struct RegionHubG {
     std::string name;
     Realm realm;
     std::vector<NPCInfo> npcs;
-    std::vector<Enemy> enemies;
-    Rectangle rectangle;
-    std::vector<MapZone> zones;
+    std::vector<SubArea> areas;
+    AreaID currenSubAreaId;
 };
 
 class GameEngine {
@@ -305,7 +316,7 @@ private:
     int getSelectedAttack();
     bool checkWallCollision(const Rectangle& rec);
     void playerMovement(float velocity);
-    void updateCamera(const RegionHubG* currentHub);
+    void updateCamera(const SubArea* currentSubArea);
     Item createItem(ItemID id, int quantity = 1);
 
     // FILE SAVE
@@ -385,6 +396,7 @@ private:
     int m_questLogIndex = 0;
     int m_lastPlayerLevel = 1;
     RenderTexture2D m_targetTexture;
+    bool m_exitGame = false;
 };
 
 #endif

@@ -25,20 +25,20 @@ void GameEngine::update() {
     }
 }
 
-void GameEngine::updateCamera(const RegionHubG* currentHub) {
-    if (!currentHub) return;
+void GameEngine::updateCamera(const SubArea* currentSubArea) {
+    if (!currentSubArea) return;
 
     Vector2 cameraTarget = m_player.getPosition();
     float halfScreenWidth = (SCREENSIZEX / 2.0f) / m_camera.zoom;
     float halfScreenHeight = (SCREENSIZEY / 2.0f) / m_camera.zoom;
 
-    float minCameraX = currentHub->rectangle.x + halfScreenWidth;
-    float maxCameraX = currentHub->rectangle.x + currentHub->rectangle.width - halfScreenWidth;
+    float minCameraX = currentSubArea->bounds.x + halfScreenWidth;
+    float maxCameraX = currentSubArea->bounds.x + currentSubArea->bounds.width - halfScreenWidth;
     if (cameraTarget.x < minCameraX) cameraTarget.x = minCameraX;
     if (cameraTarget.x > maxCameraX) cameraTarget.x = maxCameraX;
 
-    float minCameraY = currentHub->rectangle.y + halfScreenHeight;
-    float maxCameraY = currentHub->rectangle.y + currentHub->rectangle.height - halfScreenHeight;
+    float minCameraY = currentSubArea->bounds.y + halfScreenHeight;
+    float maxCameraY = currentSubArea->bounds.y + currentSubArea->bounds.height - halfScreenHeight;
     if (cameraTarget.y < minCameraY) cameraTarget.y = minCameraY;
     if (cameraTarget.y > maxCameraY) cameraTarget.y = maxCameraY;
 

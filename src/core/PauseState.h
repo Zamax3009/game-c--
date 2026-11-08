@@ -18,6 +18,9 @@ public:
         if (IsKeyPressed(KEY_O)) {
             engine.goToOptions();
         }
+        if (IsKeyPressed(KEY_T)) {
+            engine.m_exitGame = true;
+        }
     }
 
     void render(GameEngine& engine) override {
@@ -35,6 +38,7 @@ public:
         DrawText("Press [ESC] Resume", boxX + 50, boxY + 110, 14, WHITE);
         DrawText("Press [O] for Options", boxX + 50, boxY + 160, 14, WHITE);
         DrawText("Press [M] to Main Menu", boxX + 50, boxY + 200, 14, WHITE);
+        DrawText("Press [T] to Close Window", boxX + 50, boxY + 240, 14, WHITE);
     }
 };
 

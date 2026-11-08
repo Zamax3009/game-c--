@@ -8,7 +8,6 @@
 class QuestLogState : public GameState {
 public:
     void update(GameEngine& engine) override {
-        // Chiudi il registro missioni e torna all'hub con [J] o [I]
         if (IsKeyPressed(KEY_J) || IsKeyPressed(KEY_I)) {
             engine.goToRegionHub();
             return;
@@ -16,7 +15,6 @@ public:
         
         if (engine.m_quests.empty()) return;
 
-        // Navigazione verticale tra le quest
         if (IsKeyPressed(KEY_W) || IsKeyPressed(KEY_UP)) {
             engine.m_questLogIndex = (engine.m_questLogIndex - 1 + engine.m_quests.size()) % engine.m_quests.size();
         }

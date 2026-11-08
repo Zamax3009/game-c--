@@ -20,12 +20,18 @@ public:
                     if (engine.m_selectRealm == Realm::Aqua) PlayMusicStream(engine.m_aquaSound);
                     else if (engine.m_selectRealm == Realm::Ignis) PlayMusicStream(engine.m_ignisSound);
 
-                    for (const auto& hub : engine.m_regionHub) {
+                    for (auto& hub : engine.m_regionHub) {
                         if (hub.realm == engine.m_selectRealm) {
-                            engine.m_player.setPosition({
-                                hub.rectangle.x + (hub.rectangle.width / 2),
-                                hub.rectangle.y + (hub.rectangle.height / 2)
-                            });
+                            hub.currenSubAreaId = AreaID::Capital;
+
+                            for (const auto& subArea : hub.areas) {
+                                if (subArea.id == AreaID::Capital) {
+                                    engine.m_player.setPosition({
+                                        subArea.bounds.x + (subArea.bounds.width / 2),
+                                        subArea.bounds.y + (subArea.bounds.height / 2)
+                                    });
+                                }
+                            }
                             break;
                         }
                     }

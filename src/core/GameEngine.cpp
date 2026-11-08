@@ -51,25 +51,25 @@ void GameEngine::saveGame(const std::string& filename) {
     sqlite3_exec(db, "DELETE FROM player;", nullptr, nullptr, &errMsg);
     Vector2 playerPos = m_player.getPosition();
     std::string insertPlayer = "INSERT INTO player VALUES (" +
-        std::to_string(m_player.getHP()) + ", " +
-        std::to_string(m_player.getMaxHP()) + ", " +
-        std::to_string(m_player.getMana()) + ", " +
-        std::to_string(m_player.getMaxMana()) + ", " +
-        std::to_string(m_player.getGold()) + ", " +
-        std::to_string(playerPos.x) + ", " +
-        std::to_string(playerPos.y) + ", " +
-        std::to_string(static_cast<int>(m_selectRealm)) + ", " +
-        std::to_string(m_player.getLevel()) + ", " +
-        std::to_string(m_player.getXP()) + ", " +
-        std::to_string(m_player.getXPToNextLevel()) + ", " +
-        std::to_string(m_player.getReputation(Realm::Aer)) + ", " +
-        std::to_string(m_player.getReputation(Realm::Aqua)) + ", " +
+        std::to_string(m_player.getHP())                     + ", " +
+        std::to_string(m_player.getMaxHP())                  + ", " +
+        std::to_string(m_player.getMana())                   + ", " +
+        std::to_string(m_player.getMaxMana())                + ", " +
+        std::to_string(m_player.getGold())                   + ", " +
+        std::to_string(playerPos.x)                          + ", " +
+        std::to_string(playerPos.y)                          + ", " +
+        std::to_string(static_cast<int>(m_selectRealm))      + ", " +
+        std::to_string(m_player.getLevel())                  + ", " +
+        std::to_string(m_player.getXP())                     + ", " +
+        std::to_string(m_player.getXPToNextLevel())          + ", " +
+        std::to_string(m_player.getReputation(Realm::Aer))   + ", " +
+        std::to_string(m_player.getReputation(Realm::Aqua))  + ", " +
         std::to_string(m_player.getReputation(Realm::Terra)) + ", " +
         std::to_string(m_player.getReputation(Realm::Ignis)) + ", " +
-        std::to_string(m_player.getMastery(Realm::Aer)) + ", " +
-        std::to_string(m_player.getMastery(Realm::Aqua)) + ", " +
-        std::to_string(m_player.getMastery(Realm::Terra)) + ", " +
-        std::to_string(m_player.getMastery(Realm::Ignis)) + ");";
+        std::to_string(m_player.getMastery(Realm::Aer))      + ", " +
+        std::to_string(m_player.getMastery(Realm::Aqua))     + ", " +
+        std::to_string(m_player.getMastery(Realm::Terra))    + ", " +
+        std::to_string(m_player.getMastery(Realm::Ignis))    + ");";
     
     sqlite3_exec(db, insertPlayer.c_str(), nullptr, nullptr, &errMsg);
         sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS inventory (item_id INTEGER, quantity INTEGER);", nullptr, nullptr, &errMsg);
@@ -84,14 +84,25 @@ void GameEngine::saveGame(const std::string& filename) {
         std::string insertWI = "INSERT INTO world_items VALUES (" + std::to_string(i) + ", " + (m_worldItems[i].isCollected() ? "1" : "0") + ");";
         sqlite3_exec(db, insertWI.c_str(), nullptr, nullptr, &errMsg);
     }
-    sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS enemies (hub_index INTEGER, enemy_index INTEGER, is_defeated INTEGER);", nullptr, nullptr, &errMsg);
+    sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS enemies (hub_index INTEGER, area_index INTEGER, enemy_index INTEGER, is_defeated INTEGER);", nullptr, nullptr, &errMsg);
     sqlite3_exec(db, "DELETE FROM enemies;", nullptr, nullptr, &errMsg);
     for (size_t h = 0; h < m_regionHub.size(); h++) {
-        for (size_t e = 0; e < m_regionHub[h].enemies.size(); e++) {
-            std::string insertEnemy = "INSERT INTO enemies VALUES (" + std::to_string(h) + ", " + std::to_string(e) + ", " + (m_regionHub[h].enemies[e].isDefeated() ? "1" : "0") + ");";
-            sqlite3_exec(db, insertEnemy.c_str(), nullptr, nullptr, &errMsg);
+        for (size_t a = 0; a < m_regionHub[h].areas.size(); a++) {
+            for (size_t e = 0; e < m_regionHub[h].areas[a].enemies.size(); e++) {
+                std::string insertEnemy = "INSERT INTO enemies VALUES (" + std::to_string(h) + ", " + std::to_string(a) + ", " + std::to_string(e) + ", " + (m_regionHub[h].areas[a].enemies[e].isDefeated() ? "1" : "0") + ");";
+                sqlite3_exec(db, insertEnemy.c_str(), nullptr, nullptr, &errMsg);
+            }
         }
     }
+    sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS hub_state ( hub_index INTEGER, current_sub_area INTEGER);", nullptr, nullptr, &errMsg);
+    sqlite3_exec(db, "DELETE FROM hub_state;", nullptr, nullptr, &errMsg);
+    for (size_t h = 0; h < m_regionHub.size(); h++) {
+        std::string insertHub = "INSERT INTO hub_state VALUES (" +
+            std::to_string(h) + ", " +
+            std::to_string(static_cast<int>(m_regionHub[h].currenSubAreaId)) + ");";
+        sqlite3_exec(db, insertHub.c_str(), nullptr, nullptr, &errMsg);
+    }
+
     sqlite3_exec(db, "CREATE TABLE IF NOT EXISTS quests (quest_id INTEGER, is_accepted INTEGER, is_completed INTEGER, current_progress INTEGER);", nullptr, nullptr, &errMsg);
     sqlite3_exec(db, "DELETE FROM quests;", nullptr, nullptr, &errMsg);
     for (const auto& quest : m_quests) {
@@ -137,14 +148,14 @@ void GameEngine::loadGame(const std::string& filename) {
             m_player.setLevel(sqlite3_column_int(stmt, 8));
             m_player.setXP(sqlite3_column_int(stmt, 9));
             m_player.setXPToNextLevel(sqlite3_column_int(stmt, 10));
-            m_player.modifyReputation(Realm::Aer, sqlite3_column_int(stmt, 11) - m_player.getReputation(Realm::Aer));
-            m_player.modifyReputation(Realm::Aqua, sqlite3_column_int(stmt, 12) - m_player.getReputation(Realm::Aqua));
+            m_player.modifyReputation(Realm::Aer, sqlite3_column_int(stmt, 11)   -   m_player.getReputation(Realm::Aer));
+            m_player.modifyReputation(Realm::Aqua, sqlite3_column_int(stmt, 12)  -  m_player.getReputation(Realm::Aqua));
             m_player.modifyReputation(Realm::Terra, sqlite3_column_int(stmt, 13) - m_player.getReputation(Realm::Terra));
             m_player.modifyReputation(Realm::Ignis, sqlite3_column_int(stmt, 14) - m_player.getReputation(Realm::Ignis));
-            m_player.modifyMastery(Realm::Aer, sqlite3_column_int(stmt, 15) - m_player.getMastery(Realm::Aer));
-            m_player.modifyMastery(Realm::Aqua, sqlite3_column_int(stmt, 16) - m_player.getMastery(Realm::Aqua));
-            m_player.modifyMastery(Realm::Terra, sqlite3_column_int(stmt, 17) - m_player.getMastery(Realm::Terra));
-            m_player.modifyMastery(Realm::Ignis, sqlite3_column_int(stmt, 18) - m_player.getMastery(Realm::Ignis));
+            m_player.modifyMastery(Realm::Aer, sqlite3_column_int(stmt, 15)      -      m_player.getMastery(Realm::Aer));
+            m_player.modifyMastery(Realm::Aqua, sqlite3_column_int(stmt, 16)     -     m_player.getMastery(Realm::Aqua));
+            m_player.modifyMastery(Realm::Terra, sqlite3_column_int(stmt, 17)    -    m_player.getMastery(Realm::Terra));
+            m_player.modifyMastery(Realm::Ignis, sqlite3_column_int(stmt, 18)    -    m_player.getMastery(Realm::Ignis));
         }
         sqlite3_finalize(stmt);
     }
@@ -170,13 +181,25 @@ void GameEngine::loadGame(const std::string& filename) {
         sqlite3_finalize(stmt);
     }
 
-    if (sqlite3_prepare_v2(db, "SELECT hub_index, enemy_index, is_defeated FROM enemies;", -1, &stmt, nullptr) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(db, "SELECT hub_index, area_index, enemy_index, is_defeated FROM enemies;", -1, &stmt, nullptr) == SQLITE_OK) {
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             int h = sqlite3_column_int(stmt, 0);
-            int e = sqlite3_column_int(stmt, 1);
-            int defeated = sqlite3_column_int(stmt, 2);
-            if (h < m_regionHub.size() && e < m_regionHub[h].enemies.size()) {
-                m_regionHub[h].enemies[e].setDefeated(defeated == 1);
+            int a = sqlite3_column_int(stmt, 1);
+            int e = sqlite3_column_int(stmt, 2);
+            int defeated = sqlite3_column_int(stmt, 3);
+            if (h < m_regionHub.size() && a < m_regionHub[h].areas.size() && e < m_regionHub[h].areas[a].enemies.size()) {
+                m_regionHub[h].areas[a].enemies[e].setDefeated(defeated == 1);
+            }
+        }
+        sqlite3_finalize(stmt);
+    }
+
+    if (sqlite3_prepare_v2(db, "SELECT hub_index, current_sub_area FROM hub_state;", -1, &stmt, nullptr) == SQLITE_OK) {
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            int h = sqlite3_column_int(stmt, 0);
+            int subAreaInt = sqlite3_column_int(stmt, 1);
+            if (h < m_regionHub.size()) {
+                m_regionHub[h].currenSubAreaId = static_cast<AreaID>(subAreaInt);
             }
         }
         sqlite3_finalize(stmt);
@@ -285,33 +308,10 @@ GameEngine::GameEngine() {
                 {"Aer Wizard", "Wise old Wizard, keeper of secrets", "assets/AerDialogues.json", "aer_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
             },
             {
-                Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED),
-                Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE)
+                { AreaID::Village, "Aer Village", {0, 100, 1280, 620}, {}, {}, BLUE },
+                { AreaID::Capital, "Aer Citadel", {0, 100, 1280, 620}, {Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED), Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE) }, {}, DARKGRAY}
             },
-            {0, 100, 1280, 620},
-            { 
-                { "Mount Pyroclast", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKGRAY, false },
-                { "Scorched Steppes", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKBROWN, false },
-                { "Anchient Titan Forge", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKGRAY, false },
-                { "Magma Flow", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKGRAY, true },
-            }
-        },
-        {
-            "Ignis", Realm::Ignis, {
-                {"Gwen", "Tavern owner", "assets/IgnisDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 350.0f}, BROWN}},
-                {"Ignis Wizard", "Wise old Wizard, keeper of secrets", "assets/IgnisDialogues.json", "ignis_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
-            },
-            {
-                Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED),
-                Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE)
-            },
-            {0, 100, 1280, 620},
-            { 
-                { "Mount Pyroclast", { 540.0f, 140.0f, 200.0f, 180.0f }, DARKGRAY, false },
-                { "Scorched Steppes", { 80.0f, 150.0f, 400.0f, 450.0f }, DARKBROWN, false },
-                { "Anchient Titan Forge", { 850.0f, 150.0f, 350.0f, 250.0f }, DARKGRAY, false },
-                { "Magma Flow", { 50.0f, 480.0f, 1180.0f, 40.0f }, DARKGRAY, true },
-            }
+            AreaID::Village
         },
         {
             "Aqua", Realm::Aqua, {
@@ -319,52 +319,51 @@ GameEngine::GameEngine() {
                 {"Aqua Wizard", "Wise old Wizard, keeper of secrets", "assets/AquaDialogues.json", "aqua_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
             },
             {
-                Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED),
-                Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE)
+                { AreaID::Village, "Aqua Village", {0, 100, 1280, 620}, {}, {}, BLUE },
+                { AreaID::Capital, "Aqua Citadel", {0, 100, 1280, 620}, {Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED), Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE) }, {}, DARKGRAY}
             },
-            {0, 100, 1280, 620},
-            { 
-                { "Mount Pyroclast", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKGRAY, false },
-                { "Scorched Steppes", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKBROWN, false },
-                { "Anchient Titan Forge", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKGRAY, false },
-                { "Magma Flow", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKGRAY, true },
-            }
+            AreaID::Village
         },
         {
-            "Terra", Realm::Terra, {
+            "Aer", Realm::Terra, {
                 {"Gwen", "Tavern owner", "assets/TerraDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 350.0f}, BROWN}},
                 {"Terra Wizard", "Wise old Wizard, keeper of secrets", "assets/TerraDialogues.json", "terra_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
             },
             {
-                Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED),
-                Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE)
+                { AreaID::Village, "Terra Village", {0, 100, 1280, 620}, {}, {}, BLUE },
+                { AreaID::Capital, "Terra Citadel", {0, 100, 1280, 620}, {Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED), Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE) }, {}, DARKGRAY}
             },
-            {0, 100, 1280, 620},
-            { 
-                { "Mount Pyroclast", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKGRAY, false },
-                { "Scorched Steppes", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKBROWN, false },
-                { "Anchient Titan Forge", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKGRAY, false },
-                { "Magma Flow", { 540.0f, 260.0f, 200.0f, 200.0f}, DARKGRAY, true },
-            }
+            AreaID::Village
+        },
+        {
+            "Ignis", Realm::Ignis, {
+                {"Gwen", "Tavern owner", "assets/IgnisDialogues.json", "gwen", {50.0f, 55.0f}, {{10.0f, 15.0f}, {100.0f, 350.0f}, BROWN}},
+                {"Aer Wizard", "Wise old Wizard, keeper of secrets", "assets/IgnisDialogues.json", "ignis_wizard", {50.0f, 55.0f}, {{10.0f, 15.0f}, {1000.0f, 350.0f}, WHITE}}
+            },
+            {
+                { AreaID::Village, "Ignis Village", {0, 100, 1280, 620}, {}, {}, BLUE },
+                { AreaID::Capital, "Ignis Citadel", {0, 100, 1280, 620}, {Enemy("Goblin", 1, 30, 10, {400.0f, 300.0f}, {20.0f, 20.0f}, RED), Enemy("Guard", 2, 20, 12, {800.0f, 500.0f}, {20.0f, 20.0f}, PURPLE) }, {}, DARKGRAY}
+            },
+            AreaID::Village
         }
     };
 
     m_buildings = {
         {Realm::Aer, {
-            {"gwen", "Tavern", {50, 200, 150, 250}, DARKBROWN, {51, 201, 148, 248}, BEIGE, {110, 440, 30, 20}, BROWN},
-            {"aer_wizard", "Library", {900, 200, 150, 250}, LIGHTGRAY, {901, 201, 148, 248}, WHITE, {960, 440, 30, 20}, BROWN},
+            {AreaID::Capital, "gwen", "Tavern", {50, 200, 150, 250}, DARKBROWN, {51, 201, 148, 248}, BEIGE, {110, 440, 30, 20}, BROWN},
+            {AreaID::Capital, "aer_wizard", "Library", {900, 200, 150, 250}, LIGHTGRAY, {901, 201, 148, 248}, WHITE, {960, 440, 30, 20}, BROWN},
         }},
         {Realm::Aqua, {
-            {"gwen", "Tavern", {50, 200, 150, 250}, DARKBROWN, {51, 201, 148, 248}, BEIGE, {110, 440, 30, 20}, BROWN},
-            {"aqua_wizard", "Library", {900, 200, 150, 250}, WHITE, {901, 201, 148, 248}, LIGHTGRAY, {960, 440, 30, 20}, BROWN},
+            {AreaID::Capital, "gwen", "Tavern", {50, 200, 150, 250}, DARKBROWN, {51, 201, 148, 248}, BEIGE, {110, 440, 30, 20}, BROWN},
+            {AreaID::Capital, "aqua_wizard", "Library", {900, 200, 150, 250}, WHITE, {901, 201, 148, 248}, LIGHTGRAY, {960, 440, 30, 20}, BROWN},
         }},
         {Realm::Terra, {
-            {"gwen", "Tavern", {50, 200, 150, 250}, DARKBROWN, {51, 201, 148, 248}, BEIGE, {110, 440, 30, 20}, BROWN},
-            {"terra_wizard", "Library", {900, 200, 150, 250}, WHITE, {901, 201, 148, 248}, LIGHTGRAY, {960, 440, 30, 20}, BROWN},
+            {AreaID::Capital, "gwen", "Tavern", {50, 200, 150, 250}, DARKBROWN, {51, 201, 148, 248}, BEIGE, {110, 440, 30, 20}, BROWN},
+            {AreaID::Capital, "terra_wizard", "Library", {900, 200, 150, 250}, WHITE, {901, 201, 148, 248}, LIGHTGRAY, {960, 440, 30, 20}, BROWN},
         }},
         {Realm::Ignis, {
-            {"gwen", "Tavern", {50, 200, 150, 250}, DARKBROWN, {51, 201, 148, 248}, BEIGE, {110, 440, 30, 20}, BROWN},
-            {"ignis_wizard", "Library", {900, 200, 150, 250}, WHITE, {901, 201, 148, 248}, LIGHTGRAY, {960, 440, 30, 20}, BROWN},
+            {AreaID::Capital, "gwen", "Tavern", {50, 200, 150, 250}, DARKBROWN, {51, 201, 148, 248}, BEIGE, {110, 440, 30, 20}, BROWN},
+            {AreaID::Capital, "ignis_wizard", "Library", {900, 200, 150, 250}, WHITE, {901, 201, 148, 248}, LIGHTGRAY, {960, 440, 30, 20}, BROWN},
         }}
     };
 
@@ -411,7 +410,7 @@ GameEngine::~GameEngine() {
 }
 
 void GameEngine::run() {
-    while (!WindowShouldClose()) {
+    while (!WindowShouldClose() && !m_exitGame) {
         update();
         render();
     }
@@ -427,22 +426,26 @@ bool GameEngine::checkWallCollision(const Rectangle& rec) {
     }
     if (!currentHub) return false;
 
-    if (rec.x < currentHub->rectangle.x ||
-        (rec.x + rec.width) > (currentHub->rectangle.x + currentHub->rectangle.width) ||
-        rec.y < currentHub->rectangle.y ||
-        (rec.y + rec.width) > (currentHub->rectangle.y + currentHub->rectangle.height)) {
-            return true;
-    }
-
-    for (const auto& zone : currentHub->zones) {
-        if (zone.isHazardous && CheckCollisionRecs(rec, zone.bounds)) {
-            return true;
+    SubArea* currentSubArea = nullptr;
+    for (auto& sa : currentHub->areas) {
+        if (sa.id == currentHub->currenSubAreaId) {
+            currentSubArea = &sa;
+            break;
         }
+    }
+    if (!currentSubArea) return false;
+
+    if (rec.x < currentSubArea->bounds.x ||
+        (rec.x + rec.width) > (currentSubArea->bounds.x + currentSubArea->bounds.width) ||
+        rec.y < currentSubArea->bounds.y ||
+        (rec.y + rec.width) > (currentSubArea->bounds.y + currentSubArea->bounds.height)) {
+            return true;
     }
 
     for (auto& regionBldg : m_buildings) {
         if (regionBldg.realm == m_selectRealm) {
             for (auto& bldg : regionBldg.buildings) {
+                if (bldg.areaID != currentSubArea->id) continue;
                 for (const auto& wall : bldg.walls) {
                     if (CheckCollisionRecs(rec, wall.bounds)){
                         return true;

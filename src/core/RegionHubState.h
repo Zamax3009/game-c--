@@ -78,67 +78,64 @@ public:
 private:
     void updateActiveHub(GameEngine& engine, RegionHubG* currentHub) {
         engine.playerMovement(4.0f);
-        Vector2 playerPos = engine.m_player.getPosition();
-        
-        if (IsKeyPressed(KEY_J)) {
-            engine.changeState(std::make_unique<QuestLogState>());
-            return;
-        }
 
-        std::vector<WallCollider> activeWalls;
-        for (const auto& regionBldg : engine.m_buildings) {
-            if (regionBldg.realm == engine.m_selectRealm) {
-                for (const auto& bldg : regionBldg.buildings) {
-                    activeWalls.insert(activeWalls.end(), bldg.walls.begin(), bldg.walls.end());
+        SubArea* currentSubArea = nullptr;
+        for (auto& sa : currentHub->areas) {
+            if (sa.id == currentHub->currenSubAreaId) {
+                currentSubArea = &sa;
+                break;
+            }
+        }
+        if (!currentSubArea) return;
+
+        engine.updateCamera(currentSubArea);
+
+        Vector2 playerPos = engine.m_player.getPosition();
+
+        std::vector<WallCollider> allWalls;
+        for (const auto& rb : engine.m_buildings) {
+            if (rb.realm == engine.m_selectRealm) {
+                for (const auto& bldg : rb.buildings) {
+                    if (bldg.areaID != currentSubArea->id) continue;
+                    for (const auto& w : bldg.walls) {
+                        allWalls.push_back(w);
+                    }
                 }
             }
         }
 
-        for (auto& enemy : currentHub->enemies) {
-            if (!enemy.isDefeated()) {
-                enemy.updateAI(playerPos, activeWalls, currentHub->rectangle);
+        for (auto& enemy : currentSubArea->enemies) {
+            enemy.updateAI(playerPos, allWalls, currentSubArea->bounds);
+        }
 
-                Rectangle enemyRec = enemy.getCollisionBox();
-                Rectangle playerRec = { playerPos.x, playerPos.y, 10.0f, 15.0f };
-
-                if (CheckCollisionRecs(playerRec, enemyRec)) {
+        if (IsKeyPressed(KEY_SPACE)) {
+            for (auto& enemy : currentSubArea->enemies) {
+                if (!enemy.isDefeated() && CheckCollisionPointRec(playerPos, enemy.getCollisionBox())) {
                     engine.m_activeEnemy = &enemy;
-                    engine.changeState(std::make_unique<CombatState>());
+                    engine.goToCombat();
                     return;
                 }
             }
         }
 
-        if (IsKeyPressed(KEY_I)) {
-            engine.changeState(std::make_unique<InventoryState>());
-            return;
-        }
-
         if (IsKeyPressed(KEY_F)) {
-            RegionHubG* hubToCheck = nullptr;
-            for (auto& hub : engine.m_regionHub) {
-                if (hub.realm == engine.m_selectRealm) {
-                    hubToCheck = &hub;
-                    break;
-                }
-            }
-            if (hubToCheck) {
-                for (const auto& npc : hubToCheck->npcs) {
-                    Rectangle npcRec = {
-                        npc.npcGraphics.npcPos.x - (npc.npcCollision.x / 2.0f),
-                        npc.npcGraphics.npcPos.y - (npc.npcCollision.y / 2.0f),
-                        npc.npcCollision.x,
-                        npc.npcCollision.y
-                    };
-
-                    if (CheckCollisionPointRec(playerPos, npcRec)) {
-                        if (npc.npcId == "gwen") {
-                            engine.changeState(std::make_unique<ShopState>());
+            for (const auto& rb : engine.m_buildings) {
+                if (rb.realm == engine.m_selectRealm) {
+                    for ( const auto& bldg : rb.buildings) {
+                        if (bldg.areaID != currentSubArea->id) continue;
+                        if (!bldg.isPlayerInside) continue;
+                        if (bldg.npc == "gwen") {
+                            engine.goToShop();
                         } else {
-                            if (engine.m_dialogueManager.loadFromFile(npc.dialogueFile, npc.npcId)) {
-                                engine.m_dialogueManager.startDialogue(0);
-                                engine.changeState(std::make_unique<DialogueState>());
-                            }
+                            std::string realName = "Aer";
+                            if (engine.m_selectRealm == Realm::Aqua) realName = "Aqua";
+                            else if (engine.m_selectRealm == Realm::Terra) realName = "Terra";
+                            else if (engine.m_selectRealm == Realm::Ignis) realName = "Ignis";
+
+                            std::string dialogueFile = "assets/" + realName + "Dialogues.json";
+                            engine.m_dialogueManager.loadFromFile(dialogueFile, bldg.npc);
+                            engine.m_dialogueManager.startDialogue(1);
+                            engine.goToDialogue();
                         }
                         return;
                     }
@@ -147,30 +144,33 @@ private:
         }
 
         if (IsKeyPressed(KEY_E)) {
-            for (auto& wItem : engine.m_worldItems) {
-                if (!wItem.isCollected() && wItem.getRealm() == engine.m_selectRealm) {
-                    float dist = Vector2Distance(playerPos, wItem.getPosition());
-                    if (dist < 35.0f) {
-                        wItem.setCollected(true);
-                        engine.m_inventory.addItem(engine.createItem(wItem.getID(), wItem.getQuantity()));
-
-                        if (wItem.getID() == ItemID::ElementalCrystal) {
-                            for (auto& quest : engine.m_quests) {
-                                if (quest.id == QuestID::CrystalGathering && quest.isAccepted && !quest.isCompleted) {
-                                    quest.currentProgress++;
-                                    if (quest.currentProgress >= quest.targetProgress) {
-                                        engine.completeQuest(quest);
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                    }
+            for (auto& wItem : currentSubArea->items) {
+                if (!wItem.isCollected() && Vector2Distance(playerPos, wItem.getPosition()) < 35.0f) {
+                    wItem.setCollected(true);
+                    engine.m_inventory.addItem(engine.createItem(wItem.getID(), wItem.getQuantity()));
+                    engine.showNotification("Picked up: " + wItem.getName());
+                    break;
                 }
             }
         }
 
-        engine.updateCamera(currentHub);
+        switch (currentHub->currenSubAreaId)
+        {
+        case AreaID::Village:
+            if (playerPos.x > currentSubArea->bounds.x + currentSubArea->bounds.width - 20.0f) {
+                currentHub->currenSubAreaId = AreaID::Capital;
+                engine.m_player.setPosition({ currentSubArea->bounds.x + 40.0f, playerPos.y });
+            }
+            break;
+        case AreaID::Capital:
+            if (playerPos.x < currentSubArea->bounds.x + 20.0f) {
+                currentHub->currenSubAreaId = AreaID::Village;
+                engine.m_player.setPosition({ currentSubArea->bounds.x + currentSubArea->bounds.width - 40.0f, playerPos.y });
+            }
+            break;
+        default:
+            break;
+        }
     }
 
     void updateMapWindow(GameEngine& engine) {
@@ -188,12 +188,20 @@ private:
             if (engine.m_selectRealm == Realm::Aqua) PlayMusicStream(engine.m_aquaSound);
             else if (engine.m_selectRealm == Realm::Ignis) PlayMusicStream(engine.m_ignisSound);
 
-            for (const auto& hub : engine.m_regionHub) {
+            for (auto& hub : engine.m_regionHub) {
                 if (hub.realm == engine.m_selectRealm) {
-                    engine.m_player.setPosition({
-                        hub.rectangle.x + (hub.rectangle.width / 2),
-                        hub.rectangle.y + (hub.rectangle.height / 2)
-                    });
+
+                    hub.currenSubAreaId = AreaID::Capital;
+
+                    for (const auto& subArea : hub.areas) {
+                       if (subArea.id == AreaID::Capital) {
+                            engine.m_player.setPosition({
+                                subArea.bounds.x + (subArea.bounds.width / 2),
+                                subArea.bounds.y + (subArea.bounds.height / 2)
+                            });
+                            break;
+                        }
+                    }
                     break;
                 }
             }
@@ -202,22 +210,23 @@ private:
     }
 
     void renderRegionContent(GameEngine& engine, RegionHubG* currentHub) {
-        Color currentRegionColor = WHITE;
-        for (const auto& region : engine.m_regions) {
-            if (region.realm == engine.m_selectRealm){
-                currentRegionColor = region.color;
-                break;
+        SubArea* currentSubArea = nullptr;
+        for (auto& sa : currentHub->areas) {
+            if (sa.id == currentHub->currenSubAreaId) {
+                currentSubArea = &sa;
             }
         }
+        if (!currentSubArea) return;
+        
+        DrawRectangleRec(currentSubArea->bounds, ColorAlpha(currentSubArea->backgroundColor, 0.2f));
+        DrawRectangleLinesEx(currentSubArea->bounds, 2, currentSubArea->backgroundColor);
+        DrawText(currentHub->name.c_str(), currentSubArea->bounds.x + 20, currentSubArea->bounds.y + 20, 20, WHITE);
+        
+        for (const auto& regionBldg : engine.m_buildings) {
+            if (regionBldg.realm == engine.m_selectRealm) {
+                for (auto& bldg : regionBldg.buildings) {
+                    if (bldg.areaID != currentSubArea->id) continue;
 
-        for (const auto& zone : currentHub->zones) {
-            DrawRectangleRec(zone.bounds, zone.color);
-            DrawText(zone.name.c_str(), zone.bounds.x + 10, zone.bounds.y + 10, 12, WHITE);
-        }
-
-        for (const auto& regionBldg : engine.m_buildings){
-            if (regionBldg.realm == engine.m_selectRealm){
-                for (auto& bldg : regionBldg.buildings){
                     DrawRectangleRec(bldg.interior, bldg.floor);
                     DrawRectangleLinesEx(bldg.interior, 1, DARKGRAY);
 
@@ -226,25 +235,18 @@ private:
                         DrawRectangleLinesEx(bldg.building, 2, BLACK);
                         DrawRectangleRec(bldg.entrance, bldg.door);
                         DrawRectangleLinesEx(bldg.entrance, 1, BLACK);
-                        DrawText(bldg.name.c_str(), bldg.building.x + 10, bldg.building.y + 10, 14, WHITE);
+                        DrawText(bldg.name.c_str(), bldg.interior.x + 10, bldg.interior.y + 10, 14, WHITE);
                     } else {
                         DrawText(bldg.name.c_str(), bldg.interior.x + 10, bldg.interior.y + 10, 14, DARKGRAY);
-                    }
-                    for (const auto& wall : bldg.walls) {
-                        DrawRectangleRec(wall.bounds, RED);
                     }
                 }
             }
         }
 
-        DrawRectangleRec(currentHub->rectangle, ColorAlpha(currentRegionColor, 0.2f));
-        DrawRectangleLinesEx(currentHub->rectangle, 2, currentRegionColor);
-        DrawText(currentHub->name.c_str(), currentHub->rectangle.x + 20, currentHub->rectangle.y + 20, 20, WHITE);
-        
         Vector2 playerPos = engine.m_player.getPosition();
-        
-        for (const auto& wItem : engine.m_worldItems) {
-            if (!wItem.isCollected() && wItem.getRealm() == engine.m_selectRealm) {
+
+        for (const auto& wItem : currentSubArea->items) {
+            if (!wItem.isCollected()) {
                 DrawCircleV(wItem.getPosition(), 6.0f, GOLD);
                 DrawCircleLines(wItem.getPosition().x, wItem.getPosition().y, 8.0f, WHITE);
                 DrawText(wItem.getName().c_str(), wItem.getPosition().x - 25, wItem.getPosition().y - 20, 10, YELLOW);
@@ -253,28 +255,29 @@ private:
                 }
             }
         }
+        if (currentSubArea->id == AreaID::Capital) {
+            for (const auto& regionBldg : engine.m_buildings) {
+                if (regionBldg.realm == engine.m_selectRealm) {
+                    for (const auto& bldg : regionBldg.buildings) {
+                        if (bldg.isPlayerInside) {
+                            for (const auto& npcs : currentHub->npcs) {
+                                if (npcs.npcId == bldg.npc) {
+                                    Vector2 pos = npcs.npcGraphics.npcPos;
+                                    Vector2 size = npcs.npcGraphics.npcRec;
+                                    Color col = npcs.npcGraphics.npcColor;
+                                    
+                                    Rectangle visualRec = { pos.x - (size.x / 2.0f), pos.y - (size.y / 2.0f), size.x, size.y };
+                                    Rectangle collisionRec = { pos.x - (npcs.npcCollision.x / 2.0f), pos.y - (npcs.npcCollision.y / 2.0f), npcs.npcCollision.x, npcs.npcCollision.y };
 
-        for (const auto& regionBldg : engine.m_buildings) {
-            if (regionBldg.realm == engine.m_selectRealm) {
-                for (const auto& bldg : regionBldg.buildings) {
-                    if (bldg.isPlayerInside) {
-                        for (const auto& npcs : currentHub->npcs) {
-                            if (npcs.npcId == bldg.npc) {
-                                Vector2 pos = npcs.npcGraphics.npcPos;
-                                Vector2 size = npcs.npcGraphics.npcRec;
-                                Color col = npcs.npcGraphics.npcColor;
-                                
-                                Rectangle visualRec = { pos.x - (size.x / 2.0f), pos.y - (size.y / 2.0f), size.x, size.y };
-                                Rectangle collisionRec = { pos.x - (npcs.npcCollision.x / 2.0f), pos.y - (npcs.npcCollision.y / 2.0f), npcs.npcCollision.x, npcs.npcCollision.y };
+                                    bool isPlayerInRange = CheckCollisionPointRec(playerPos, collisionRec);
 
-                                bool isPlayerInRange = CheckCollisionPointRec(playerPos, collisionRec);
+                                    DrawRectangleRec(visualRec, col);
+                                    DrawRectangleLinesEx(visualRec, 1, BLACK);
+                                    DrawText(npcs.name.c_str(), pos.x - (MeasureText(npcs.name.c_str(), 12) / 2), visualRec.y - 18, 12, WHITE);
 
-                                DrawRectangleRec(visualRec, col);
-                                DrawRectangleLinesEx(visualRec, 1, BLACK);
-                                DrawText(npcs.name.c_str(), pos.x - (MeasureText(npcs.name.c_str(), 12) / 2), visualRec.y - 18, 12, WHITE);
-
-                                if (isPlayerInRange) {
-                                    DrawText("Press [F] to talk", pos.x - 45, visualRec.y - 35, 10, YELLOW);
+                                    if (isPlayerInRange) {
+                                        DrawText("Press [F] to talk", pos.x - 45, visualRec.y - 35, 10, YELLOW);
+                                    }
                                 }
                             }
                         }
@@ -282,8 +285,7 @@ private:
                 }
             }
         }
-
-        for (const auto& enemy : currentHub->enemies) {
+        for (const auto& enemy : currentSubArea->enemies) {
             if (!enemy.isDefeated()){
                 Rectangle enemyRec = enemy.getCollisionBox();
                 DrawRectangleRec(enemyRec, enemy.getColor());
@@ -299,6 +301,14 @@ private:
     }
 
     void renderMinimapContent(GameEngine& engine, RegionHubG* currentHub) {
+        SubArea* currentSubArea = nullptr;
+        for (auto& sa : currentHub->areas) {
+            if (sa.id == currentHub->currenSubAreaId) {
+                currentSubArea = &sa;
+            }
+        }
+        if (!currentSubArea) return;
+
         float mmWidth = 200.0f;
         float mmHeight = 150.0f;
         float mmX = engine.SCREENSIZEX - mmWidth - 20.0f;
@@ -309,7 +319,7 @@ private:
         DrawText("MINIMAP", mmX + 10, mmY + 10, 10, LIGHTGRAY);
 
         BeginScissorMode(static_cast<int>(mmX), static_cast<int>(mmY), static_cast<int>(mmWidth), static_cast<int>(mmHeight));
-        if (currentHub && currentHub->rectangle.width > 0 && currentHub->rectangle.height > 0) {
+        if (currentSubArea && currentSubArea->bounds.width > 0 && currentSubArea->bounds.height > 0) {
             const RegionBuildings* currentRegionBuildings = nullptr;
             for (const auto& rb : engine.m_buildings) {
                 if (rb.realm == engine.m_selectRealm) {
@@ -320,27 +330,28 @@ private:
 
             if (currentRegionBuildings) {
                 for (const auto& b : currentRegionBuildings->buildings) {
+                    if (b.areaID != currentSubArea->id) continue;
                     Rectangle bRec = b.building;
-                    float normBX = (bRec.x - currentHub->rectangle.x) / currentHub->rectangle.width;
-                    float normBY = (bRec.y - currentHub->rectangle.y) / currentHub->rectangle.height;
-                    float normBW = bRec.width / currentHub->rectangle.width;
-                    float normBH = bRec.height / currentHub->rectangle.height;
+                    float normBX = (bRec.x - currentSubArea->bounds.x) / currentSubArea->bounds.width;
+                    float normBY = (bRec.y - currentSubArea->bounds.y) / currentSubArea->bounds.height;
+                    float normBW = bRec.width / currentSubArea->bounds.width;
+                    float normBH = bRec.height / currentSubArea->bounds.height;
 
                     DrawRectangle(mmX + (normBX * mmWidth), mmY + (normBY * mmHeight), normBW * mmWidth, normBH * mmHeight, b.roof);
                 }
             }
 
-            for (const auto& enemy : currentHub->enemies) {
+            for (const auto& enemy : currentSubArea->enemies) {
                 if (!enemy.isDefeated()) {
-                    float eNormX = (enemy.getPosition().x - currentHub->rectangle.x) / currentHub->rectangle.width;
-                    float eNormY = (enemy.getPosition().y - currentHub->rectangle.y) / currentHub->rectangle.height;
+                    float eNormX = (enemy.getPosition().x - currentSubArea->bounds.x) / currentSubArea->bounds.width;
+                    float eNormY = (enemy.getPosition().y - currentSubArea->bounds.y) / currentSubArea->bounds.height;
                     DrawCircle(mmX + (eNormX * mmWidth), mmY + (eNormY * mmHeight), 3.0f, ORANGE);
                 }
             }
 
             Vector2 playerPos = engine.m_player.getPosition();
-            float normX = (playerPos.x - currentHub->rectangle.x) / currentHub->rectangle.width;
-            float normY = (playerPos.y - currentHub->rectangle.y) / currentHub->rectangle.height;
+            float normX = (playerPos.x - currentSubArea->bounds.x) / currentSubArea->bounds.width;
+            float normY = (playerPos.y - currentSubArea->bounds.y) / currentSubArea->bounds.height;
             DrawCircle(mmX + (normX * mmWidth), mmY + (normY * mmHeight), 4.0f, RED);
         }
         EndScissorMode();
